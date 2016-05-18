@@ -9,7 +9,7 @@ from random import randint
 from collections import Counter
 
 #modify constants
-K_NN = 10
+K_NN = 3
 VOXELS_GRID = [5,5,5]
 Q = 10
 T = np.linspace(0.00001,0.10,100)
@@ -86,7 +86,7 @@ def get_m(N):
 
 def get_chi(m,T):
 	print m
-	chi = (float(voxel_num)/float(T))*float(np.mean(np.square(m)) - np.mean(m)^2) 
+	chi = (float(voxel_num)/float(T))*float(np.var(m)) 
 	return chi
 
 def count_spins(spins):
