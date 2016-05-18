@@ -11,7 +11,7 @@ from collections import Counter
 #modify constants
 K_NN = 5
 VOXELS_GRID = [5,5,5]
-Q = 20
+Q = 10
 M = 100
 eta = 0.97
 
@@ -141,7 +141,7 @@ def find_clusters(aNeigh):
     return myToRet  
 
 def get_Ttrans():
- 	coeff = float(1)/float(4*np.log(1+np.sqrt(Q)))
+ 	coeff = float(4*np.log(1+np.sqrt(Q)))
  	return float(np.exp(-1/2))/float(coeff)
 
 #data import
@@ -173,8 +173,9 @@ spins = np.random.randint(Q, size=(data_matrix.shape[0],1))
 data_matrix = np.concatenate((data_matrix,spins),axis = 1)
 #SW - MC 
 chi_temp = []
-Ti = 1.1*get_Ttrans()
-Tf = 0.9*get_Ttrans()
+
+Ti = get_Ttrans() + 1 #superparamagnetic to paragmagnetic
+Tf = get_Ttrans() - float(get_Ttrans())/float(2) #ferromagnetic to superparamagnetic
 T = Ti
 temps = []
 iter_num = 0
@@ -199,6 +200,9 @@ while(T > Tf):
 	T = Ti*(np.power(eta,iter_num))
 	iter_num = iter_num + 1
 	print iter_num
+	
+	if(T > 2.5 and T < 2.6):
+		print clusters
 
 plt.plot(temps,chi_temp,'-b')
 plt.xlabel('temperature')
