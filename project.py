@@ -208,3 +208,7 @@ plt.ylabel('chi')
 plt.title('Searching for super paramagnetic range')
 plt.show()
 
+T_spm = 0.2
+#measure spin -spin correlation function
+#thresholding
+
