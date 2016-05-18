@@ -112,6 +112,7 @@ def frozen_bounds(J_matrix,T,data_matrix):
 
 	return frozen_bounds_indices
 
+#stackoverflow -> macht was wir wollen
 def find_clusters(aNeigh):
     def findRoot(aNode,aRoot):
         while aNode != aRoot[aNode][0]:
@@ -201,10 +202,7 @@ while(T > Tf):
 	iter_num = iter_num + 1
 	print iter_num
 	
-	if(T > 2.5 and T < 2.6):
-		print clusters
-
-plt.plot(temps,chi_temp,'-b')
+plt.plot(temps,chi_temp,'o')
 plt.xlabel('temperature')
 plt.ylabel('chi')
 plt.title('Searching for super paramagnetic range')
