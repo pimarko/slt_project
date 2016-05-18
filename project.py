@@ -9,11 +9,11 @@ from random import randint
 from collections import Counter
 
 #modify constants
-K_NN = 3
+K_NN = 5
 VOXELS_GRID = [5,5,5]
-Q = 10
-T = np.linspace(0.00001,0.10,100)
+Q = 20
 M = 100
+eta = 0.97
 
 #do not modify constants
 voxel_num = VOXELS_GRID[0]*VOXELS_GRID[1]*VOXELS_GRID[2]
@@ -57,7 +57,7 @@ def function_params(data_matrix):
 	nnz = 0
 	for ii in range(voxel_num):
 		for jj in range(ii+1,voxel_num):
-			D[ii,jj] = np.linalg.norm(data_matrix[ii,:] - data_matrix[jj,:])
+			D[ii,jj] = np.square(np.linalg.norm(data_matrix[ii,:] - data_matrix[jj,:]))
 			if(is_neighbor(neighbors_matrix,ii,jj)):
 				nnz = nnz + 1
 
@@ -85,7 +85,6 @@ def get_m(N):
 	return m
 
 def get_chi(m,T):
-	print m
 	chi = (float(voxel_num)/float(T))*float(np.var(m)) 
 	return chi
 
@@ -141,6 +140,10 @@ def find_clusters(aNeigh):
         myToRet[findRoot(myI,myRoot)[0]].append(myI) 
     return myToRet  
 
+def get_Ttrans():
+ 	coeff = float(1)/float(4*np.log(1+np.sqrt(Q)))
+ 	return float(np.exp(-1/2))/float(coeff)
+
 #data import
 img = nib.load('diff_data.nii')
 bvecs = np.loadtxt('bvecs')
@@ -170,10 +173,15 @@ spins = np.random.randint(Q, size=(data_matrix.shape[0],1))
 data_matrix = np.concatenate((data_matrix,spins),axis = 1)
 #SW - MC 
 chi_temp = []
-for t in T:
+Ti = 1.1*get_Ttrans()
+Tf = 0.9*get_Ttrans()
+T = Ti
+temps = []
+iter_num = 0
+while(T > Tf):
 	m_steps = []
 	for ii in range(M):
-		frozen_bounds_indices = frozen_bounds(J_matrix,t,data_matrix)
+		frozen_bounds_indices = frozen_bounds(J_matrix,T,data_matrix)
 
 		clusters = find_clusters(frozen_bounds_indices)
 		for key in clusters.keys():
@@ -182,13 +190,17 @@ for t in T:
 		
 		N = count_spins(data_matrix[:,data_matrix.shape[1]-1])
 		m = get_m(N)
-		m_steps.append(m)
+		if(ii > 9):
+			m_steps.append(m)
 
-	chi = get_chi(m_steps,t)
+	chi = get_chi(m_steps,T)
 	chi_temp.append(chi)
-	print t
+	temps.append(T)
+	T = Ti*(np.power(eta,iter_num))
+	iter_num = iter_num + 1
+	print iter_num
 
-plt.plot(T,chi_temp,'-b')
+plt.plot(temps,chi_temp,'-b')
 plt.xlabel('temperature')
 plt.ylabel('chi')
 plt.title('Searching for super paramagnetic range')
