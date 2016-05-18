@@ -17,7 +17,7 @@ VOXELS_GRID = [5,5,5]
 Q = 10
 M = 100
 eta = 0.97
-GENERATE_PLOT_SEARCH_SPM = True
+GENERATE_PLOT_SEARCH_SPM = False
 GENERATE_PLOT_CLUSTERS = True
 
 #do not modify constants
@@ -151,7 +151,7 @@ def get_Ttrans():
  	return float(np.exp(-1/2))/float(coeff)
 
 
-def in_same_cluster_cij(cluster,i,j):
+def in_same_cluster_cij(clusters,i,j):
 	for key in clusters.keys():
 		values = clusters[key]
 		if((i in values) and (j in values)):
@@ -195,7 +195,6 @@ if(GENERATE_PLOT_SEARCH_SPM):
 	T = Ti
 	temps = []
 	iter_num = 0
-	C_ij = np.zeros((voxel_num,voxel_num))
 	cluster_num = []
 	while(T > Tf):
 		m_steps = []
@@ -237,8 +236,10 @@ if(GENERATE_PLOT_SEARCH_SPM):
 if(GENERATE_PLOT_CLUSTERS):
 	#save C_ij in the MC, measure spin spin, get the threshold and build the clusters
 	
-	T_spm = 0.2 #set it to that or smth in the range (finer the range on the plot, the better we see the constant in the superparamagnetic phase)
-
+	T_spm = 0.22 #set it to that or smth in the range (finer the range on the plot, the better we see the constant in the superparamagnetic phase)
+	C_ij = np.zeros((voxel_num,voxel_num))
+	spins = np.random.randint(Q, size=(data_matrix.shape[0],1))
+	data_matrix = np.concatenate((data_matrix,spins),axis = 1)
 	for itr in range(M):
 			frozen_bounds_indices = frozen_bounds(J_matrix,T_spm,data_matrix)
 
@@ -247,18 +248,18 @@ if(GENERATE_PLOT_CLUSTERS):
 				values = clusters[key]
 				data_matrix[values,data_matrix.shape[1]-1] = np.random.randint(Q)
 
-			if(itr > 9):
-				for ii in range(voxel_coord_matrix.shape[0]):
-					for jj in range(ii+1,voxel_coord_matrix.shape[0]):
-						if(in_same_cluster_cij(clusters,ii,jj)):
-							C_ij[ii,jj] = C_ij[ii,jj] + 1
-					
+				if(itr > 9):
+				 	for ii in range(voxel_coord_matrix.shape[0]):
+				 		for jj in range(ii+1,voxel_coord_matrix.shape[0]):
+				 			if(in_same_cluster_cij(clusters,ii,jj)):
+				 				C_ij[ii,jj] = C_ij[ii,jj] + 1
+						
 
 
 			
 			print itr
 
-	C_ij = C_ij/M # upper triangular
+	C_ij = C_ij/(M-10) # upper triangular
 	C_ij = C_ij*(Q-1)
 	G_ij = C_ij + np.ones((C_ij.shape[0],C_ij.shape[1]))
 	G_ij = G_ij/Q # not upper triangluar- just observe the upper triangular part
@@ -266,11 +267,12 @@ if(GENERATE_PLOT_CLUSTERS):
 	bound_clusters = dict()
 	for ii in range(G_ij.shape[0]):
 		bound_clusters[ii] = []
-		for jj in range(ii+1,G_ij.shape[1]):
-			if(G_ij[ii,jj] > 0.5):
-				bound_clusters[ii].append(jj)
-
+	 	for jj in range(ii+1,G_ij.shape[1]):
+	 		if(G_ij[ii,jj] > 0.5):
+	 			bound_clusters[ii].append(jj)
+	
 	new_clusters = find_clusters(bound_clusters)
+	print new_clusters
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
