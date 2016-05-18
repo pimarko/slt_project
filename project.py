@@ -180,6 +180,8 @@ Tf = get_Ttrans() - float(get_Ttrans())/float(2) #ferromagnetic to superparamagn
 T = Ti
 temps = []
 iter_num = 0
+C_ij = np.zeros((voxel_num,voxel_num))
+
 while(T > Tf):
 	m_steps = []
 	for ii in range(M):
@@ -208,7 +210,6 @@ plt.ylabel('chi')
 plt.title('Searching for super paramagnetic range')
 plt.show()
 
-T_spm = 0.2
-#measure spin -spin correlation function
-#thresholding
+#save C_ij in the MC, measure spin spin, get the threshold and build the clusters
+
 
