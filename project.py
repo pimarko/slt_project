@@ -11,9 +11,11 @@ from mpl_toolkits.mplot3d import Axes3D
 import itertools
 import seaborn as sns
 
+###cij wrong!!
+
 #modify constants
 K_NN = 5
-VOXELS_GRID = [5,5,5]
+VOXELS_GRID = [7,7,7]
 Q = 10
 M = 100
 eta = 0.97
@@ -236,7 +238,7 @@ if(GENERATE_PLOT_SEARCH_SPM):
 if(GENERATE_PLOT_CLUSTERS):
 	#save C_ij in the MC, measure spin spin, get the threshold and build the clusters
 	
-	T_spm = 0.22 #set it to that or smth in the range (finer the range on the plot, the better we see the constant in the superparamagnetic phase)
+	T_spm = 0.2 #set it to that or smth in the range (finer the range on the plot, the better we see the constant in the superparamagnetic phase)
 	C_ij = np.zeros((voxel_num,voxel_num))
 	spins = np.random.randint(Q, size=(data_matrix.shape[0],1))
 	data_matrix = np.concatenate((data_matrix,spins),axis = 1)
@@ -248,18 +250,22 @@ if(GENERATE_PLOT_CLUSTERS):
 				values = clusters[key]
 				data_matrix[values,data_matrix.shape[1]-1] = np.random.randint(Q)
 
-				if(itr > 9):
-				 	for ii in range(voxel_coord_matrix.shape[0]):
-				 		for jj in range(ii+1,voxel_coord_matrix.shape[0]):
-				 			if(in_same_cluster_cij(clusters,ii,jj)):
-				 				C_ij[ii,jj] = C_ij[ii,jj] + 1
+			if(itr > 9):
+			 	for ii in range(voxel_coord_matrix.shape[0]):
+			 		for jj in range(ii+1,voxel_coord_matrix.shape[0]):
+			 			if(in_same_cluster_cij(clusters,ii,jj)):
+			 				C_ij[ii,jj] = C_ij[ii,jj] + 1
 						
 
 
 			
 			print itr
 
+	print C_ij
+	print ""
 	C_ij = C_ij/(M-10) # upper triangular
+	print C_ij
+	#sys.exit()
 	C_ij = C_ij*(Q-1)
 	G_ij = C_ij + np.ones((C_ij.shape[0],C_ij.shape[1]))
 	G_ij = G_ij/Q # not upper triangluar- just observe the upper triangular part
