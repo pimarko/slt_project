@@ -2,95 +2,75 @@ addpath('nifti');
 
 q = 10; % Spin states
 M = 100; % Monte carlo samples to draw
-burns = 10; % Monte carlo burn samples
-i_max = 5; % Patch size in i
-j_max = 5; % Patch size in j
-k_max = 5; % Patch size in k
-k = 5; % Number of nearest neighbors
-eta = 0.97;
+burns =1; % Monte carlo burn samples
+i_max = 9; % Patch size in i
+j_max = 9; % Patch size in j
+k_max = 9; % Patch size in k
+n = i_max * j_max * k_max; % Number of datapoints
+k = 26; % Number of nearest neighbors
+eta = 0.95; % Exponential cooling
 
 % Read data (only of not already read)
 if any(strcmp(who, 'data')) == 0
     data = load_nii('data/diff_data.nii.gz');
+    bvecs = dlmread('data/bvecs.txt');
 end
 
-% -------------
-% Preprocessing
-% -------------
-[X, N, N_indices, D] = read_data(data, k, i_max, j_max, k_max);
+% -----------------------------------------------------------------
+% 1) Preprocessing: Load data and build neighborhood matrix
+% -----------------------------------------------------------------
+[X, N, D, coordinate_map] = read_data(data, bvecs, k, i_max, j_max, k_max);
 
-% -------------
-% Couplings
-% -------------
-% k = mean no. of neighbors
-mean_k = 0;
-width = size(N, 2);
-for i = 1:width
-    mean_k = mean_k + nnz(N(:, i));
-end
-mean_k = mean_k / width;
-J = couplings(X, N, mean_k, D);
+% -----------------------------------------------------------------
+% 2) Calculate couplings between neighbors
+% -----------------------------------------------------------------
+J = couplings(X, N, mean_neighbors(N), D);
 
-% -------------
-% Inital spin configuration
-% -------------
-s = randi([1, q], size(X, 1), 1);
+% Temperature estimate for ferro -> para
+[T_init, T_final, T] = trans_temp(q, D);
 
-% -------------
-% Temperature estimates
-% -------------
-T_estimate = 1 / (4 * log(1 + sqrt(q))) * exp(-1/2);
-T_inital = T_estimate + 1; % Werte von marko
-T_final = T_estimate - (T_estimate / 2); % Werte von marko
-T = T_inital;
+% Variables to keep track of the values
+Ts = []; chis = []; clusters = [];
 
-% Vars to keep track of the values
-Ts = [];
-chis = [];
-cluster_trace = [];
-
-% Simluate temperature
+% -----------------------------------------------------------------
+% 3) Locate the super-paramagnetic phase
+% -----------------------------------------------------------------
 iter = 0;
 while T > T_final
-    % -------------
     % SWMC for Chi
-    % -------------
-    [chi, noOfClusters] = swmc(J, X, s, M, burns, q, T);
-    chis = [chis;chi];
-    cluster_trace = [cluster_trace; noOfClusters];
+    [chi, nO_clusters] = swmc_chi(J, X, M, burns, q, T, n);
     
-    % Update temperature
-    Ts = [Ts;T];
+    % Track values
+    chis = [chi; chis]; clusters = [nO_clusters; clusters]; Ts = [T;Ts];
     
     % Exponential cooling
-    T = T_inital * (eta ^ iter);
+    T = T_init * (eta ^ iter);
     iter = iter + 1;
 end
 
-% Temperature in the superpara. region
+% Locate temperature in the paramagnetic region
 T = Ts(find(chis == max(chis), 1, 'first'));
-%T = 0.2;
+T = 0.08
+% -----------------------------------------------------------------
+% 3) Calc the spin-spin correlation matrix
+% -----------------------------------------------------------------
+G = swmc_sscorr(J, M, burns, q, n, T);
 
-% -------------
-% Spin-spin correlation
-% -------------
-G = ss_correlation(J, T, M, burns, q, size(X, 1));
+% -----------------------------------------------------------------
+% 4) Find clusters
+% -----------------------------------------------------------------
+[noOfClusters, cluster_indices] = find_clusters(G, n);
 
-% -------------
-% Find clusters
-% -------------
-[noOfClusters, cluster_indices] = find_clusters(G, N, q);
+% -----------------------------------------------------------------
+% 5) Plot
+% -----------------------------------------------------------------
+scatter3(coordinate_map(:, 1), coordinate_map(:, 2), coordinate_map(:, 3), 800, cluster_indices, 'filled', 'square');
 
-% -------------
-% Plot
-% -------------
-scatter3(N_indices(:, 1), N_indices(:, 2), N_indices(:, 3), 30, cluster_indices);
+fig=figure; 
+hax=axes;  
+hold on 
+plot(Ts, chis) 
+line([T T],get(hax,'YLim'),'Color',[1 0 0])
 
-%fig=figure; 
-%hax=axes;  
-%hold on 
-%plot(Ts, chis) 
-%line([T T],get(hax,'YLim'),'Color',[1 0 0])
-
-%figure;
-%plot(Ts, cluster_trace);
+figure;
+plot(Ts, clusters);

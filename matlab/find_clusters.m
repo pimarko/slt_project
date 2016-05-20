@@ -1,26 +1,25 @@
-function [noOfClusters, cluster_indices] = find_clusters (G, N, q)
-    % Clusters
-    noOfDatapoints = size(N, 2);
-    clusters = zeros(noOfDatapoints, noOfDatapoints);
+function [nO_Clusters, cluster_indices] = find_clusters (G, n)
+    % Clusters linkage matrix
+    cluster_linkage = zeros(n, n);
     
     % Find linked vertices
-    for i = 1:noOfDatapoints
-        for j = 1:noOfDatapoints
+    for i = 1:n
+        for j = 1:n
             if G(i, j) > 0.5
-                clusters(i, j) = 1;
-                clusters(j, i) = 1;
+                cluster_linkage(i, j) = 1;
+                %cluster_linkage(j, i) = 1;
             end
         end
     end
     
     % Capture peripherie
-    for i = 1:noOfDatapoints
+    for i = 1:n
         p_max_neighbor = find(G(i, :) == max(G(i, :)), 1, 'first');
-        clusters(i, p_max_neighbor) = 1;
-        clusters(p_max_neighbor, 1) = 1;
+        cluster_linkage(i, p_max_neighbor) = 1;
+        %cluster_linkage(p_max_neighbor, 1) = 1;
     end
     
-    % Find clusters
-	[noOfClusters, cluster_indices] = graphconncomp(sparse(clusters));
+    % Find cluster_linkage
+	[nO_Clusters, cluster_indices] = graphconncomp(sparse(cluster_linkage), 'weak', true);
 end
 

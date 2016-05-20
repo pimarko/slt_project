@@ -1,65 +1,68 @@
-function [X, N, N_indices, D] = read_data (data, noOfNeighbors, i_max, j_max, k_max)
-    bvecs = dlmread('data/bvecs.txt');
-    
+function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_max, j_max, k_max)
     % Count non-zero rows
-    noOfNZRows = size(bvecs(any(bvecs, 2), :), 1);
+    nO_nz_rows = size(bvecs(any(bvecs, 2), :), 1);
+    
+    % Number of data points
+    n = i_max * j_max * k_max;
     
     % Data Matrix: Preallocation
-    noOfDatapoints = i_max * j_max * k_max;
-    X = zeros(noOfDatapoints, noOfNZRows);
-    N_indices = zeros(noOfDatapoints, 3);
+    X = zeros(n, nO_nz_rows);
     
-    % Neigbor mapping
-    N_map = zeros(i_max, j_max, k_max);
+    % Index to coordinates (i, j, k) mapping
+    index_map = zeros(n, 3);
     
-    % counts the number of samples
+    % Coordinates (i, j, k) to index mapping
+    coordinate_map = zeros(i_max, j_max, k_max);
+    
+    % Running datapoint v_index
     index = 1;
     
     % Extract voxel with direction vector n
     for i = 1:i_max 
         for j = 1:j_max
             for k = 1:k_max
-                index_n = 1;
+                index_direction = 1;
                 for n = 1:164
                     % Only non-zero directions
                     if bvecs(n, 1) ~= 0 && bvecs(n, 2) ~= 0 && bvecs(n, 3) ~= 0
                         % Signal strength in direction n
-                        X(index, index_n) = data.img(i, j, k, n);
-                        index_n = index_n + 1;
+                        X(index, index_direction) = data.img(i, j, k, n);
+                        index_direction = index_direction + 1;
                     end
                 end
                 
-                % Reference neighbors
-                N_map(i, j, k) = index;
-                N_indices(index, : ) = [i, j ,k];
+                % Update coordinate / index map
+                coordinate_map(i, j, k) = index;
+                index_map(index, : ) = [i, j ,k];
                 
                 index = index + 1;
             end
         end
     end
 
-    
     % Build kd-tree to search for k neighbors
-    Mdl = KDTreeSearcher(N_indices);
+    Mdl = KDTreeSearcher(index_map);
     
     % Neighbor and distance matrix
-    N = zeros(noOfNeighbors, noOfDatapoints);
-    D = squareform(pdist(N_indices), 'tomatrix');
+    N = zeros(nO_neighbors, n);
+    D = squareform(pdist(index_map), 'tomatrix');
+    D = D.^2;
     
+    % Query k-nearest neighbors
     for i = 1:i_max 
         for j = 1:j_max
             for k = 1:k_max
-                indices = knnsearch(Mdl, [i, j, k], 'K', noOfNeighbors);
-                N(:, N_map(i, j, k)) = indices;
+                indices = knnsearch(Mdl, [i, j, k], 'K', nO_neighbors);
+                N(:, coordinate_map(i, j, k)) = indices;
             end
         end
     end
     
     % Restrict to mutual neighbors only
-    for n = 1:noOfDatapoints
-        for j = 1:noOfNeighbors
-            if N(j, n) > 0 && nnz(N(:, N(j, n)) == n) == 0
-                N(j, n) = 0;
+    for n = 1:n
+        for j = 1:nO_neighbors
+            if N(j, i) > 0 && nnz(N(:, N(j, i)) == i) == 0
+                N(j, i) = 0;
             end
         end
     end
