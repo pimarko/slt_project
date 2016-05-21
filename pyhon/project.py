@@ -13,8 +13,8 @@ import find_clusters
 import seaborn as sns
 
 #modify constants
-K_NN = 10
-VOXELS_GRID = [7,7,7]
+K_NN = 5
+VOXELS_GRID = [6,6,3]
 Q = 10
 M = 100
 eta = 0.97
@@ -108,7 +108,7 @@ def build_J_matrix(neighbours_matrix,data_matrix):
 	for ii in range(voxel_num):
 		for jj in range(ii+1,voxel_num):
 			if(is_neighbour(neighbours_matrix,ii,jj)):
-				J_matrix[ii,jj] = (float(1)/float(mean_K)) * exp(float(-D[ii,jj])/float(2*mean_D*mean_D))
+				J_matrix[ii,jj] = (float(1)/float(mean_K)) * exp(float(-D[ii,jj]*D[ii,jj])/float(2*mean_D*mean_D))
 
 	return J_matrix
 			
@@ -132,7 +132,7 @@ def count_spins(spins):
 def frozen_bounds(J_matrix,T,data_matrix):
 	frozen_bounds_indices = {}
 	for ii in range(0,voxel_num):
-		frozen_bounds_indices[ii] = [ii]
+		frozen_bounds_indices[ii] = []
 		for jj in range(ii+1,voxel_num):
 			if(J_matrix[ii,jj] != 0):
 				if(data_matrix[ii, data_matrix.shape[1]-1] == data_matrix[jj, data_matrix.shape[1] - 1]):
@@ -144,6 +144,7 @@ def frozen_bounds(J_matrix,T,data_matrix):
 
 				rnum = np.random.uniform(0, 1)
 				if(rnum <= prob_frozen):
+					frozen_bounds_indices[ii].append(ii)
 					frozen_bounds_indices[ii].append(jj)
 
 	return frozen_bounds_indices
@@ -188,9 +189,9 @@ if(GENERATE_PLOT_SEARCH_SPM):
 			clusters = find_clusters.find_clusters(frozen_bounds_indices)
 			for key in clusters.keys():
 				values = clusters[key]
-				data_matrix[values,data_matrix.shape[1]-1] = np.random.randint(Q)
+				data_matrix[values,-1] = np.random.randint(Q)
 			
-			N = count_spins(data_matrix[:,data_matrix.shape[1]-1])
+			N = count_spins(data_matrix[:,-1])
 			m = get_m(N)
 			if(itr > 9):
 				m_steps.append(m)
@@ -238,7 +239,7 @@ if(GENERATE_PLOT_CLUSTERS):
 			clusters = find_clusters.find_clusters(frozen_bounds_indices)
 			for key in clusters.keys():
 				values = clusters[key]
-				data_matrix[values,data_matrix.shape[1]-1] = np.random.randint(Q)
+				data_matrix[values,-1] = np.random.randint(Q)
 
 			if(itr > 9):
 			 	for ii in range(voxel_num):
@@ -261,6 +262,7 @@ if(GENERATE_PLOT_CLUSTERS):
 		bound_clusters[ii] = []
 	 	for jj in range(ii+1,G_ij.shape[1]):
 	 		if(G_ij[ii,jj] > 0.5):
+	 			bound_clusters[ii].append(ii)
 	 			bound_clusters[ii].append(jj)
 	
 	new_clusters = find_clusters.find_clusters(bound_clusters)
@@ -269,7 +271,7 @@ if(GENERATE_PLOT_CLUSTERS):
 	ax = fig.add_subplot(111, projection='3d')
 	palette = itertools.cycle(sns.color_palette())
 	for key in new_clusters.keys():
-		values = new_clusters[key] #all voxels in this cluster; voxel numbers
+		values = new_clusters[key]
 		iss = data_matrix[values,0]
 		jss = data_matrix[values,1]
 		kss = data_matrix[values,2]
