@@ -1,6 +1,6 @@
-function [chi, nO_clusters] = swmc_chi (J, X, M, burns, q, T, n)
+function [chi, nO_clusters] = swmc_chi (J, M, burns, q, T, n)
     % Configuration states: record inital spin configuration
-    curr_config = sample_spins(q, n)';
+    curr_config = sample_spins(q, n);
 
     % Quantity to estimate
     m = zeros(M, 1);
@@ -22,13 +22,17 @@ function [chi, nO_clusters] = swmc_chi (J, X, M, burns, q, T, n)
         end
         
         % Now calc m
-        m(iter, 1) = (q * n_max - n) / ((q - 1) * n);
+        m(iter) = (q * n_max - n) / ((q - 1) * n);
         
         % Switch the two spin configs
         curr_config = next_config;
     end
 
     % Estimate X via SWMC <X>
-    chi = (n / T) * var(m(burns + 1:end));
+    if burns == 0
+        burns = 1;
+    end
+    
+    chi = (n / T) * var(m(burns:end));  
  end
 

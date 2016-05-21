@@ -1,7 +1,4 @@
-function [J] = couplings (X, N, k, D)
-    % Number of datapoints
-    n = size(X, 1);
-    
+function [J] = couplings (N, k, D, n)
     % Coupling matrix
     J = zeros(n, n);
     

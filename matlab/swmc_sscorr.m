@@ -1,6 +1,6 @@
 function [G] = swmc_sscorr (J, M, burns, q, n, T)
     % Configuration states: record inital spin configuration
-    curr_config = sample_spins(q, n)';
+    curr_config = sample_spins(q, n);
 
     % quantity to estimate
     C = zeros(n, n);
@@ -15,7 +15,6 @@ function [G] = swmc_sscorr (J, M, burns, q, n, T)
         % ---------------------------------------
         % 2) Calc the quantitiy of interest
         % ---------------------------------------
-        
         % Calculate indicator function
         for i = 1:n
             for j = 1:n
