@@ -1,4 +1,4 @@
-function [chi, nO_clusters] = swmc_chi (J, M, burns, q, T, n)
+function [chi, m_estimate, nO_clusters] = swmc_chi (J, M, N, burns, q, T, n)
     % Configuration states: record inital spin configuration
     curr_config = sample_spins(q, n);
 
@@ -10,7 +10,7 @@ function [chi, nO_clusters] = swmc_chi (J, M, burns, q, T, n)
         % ---------------------------------------
         % 1) State transition: S_n -> S_n+1
         % ---------------------------------------
-        [next_config, nO_clusters, cluster_indices] = state_transition(curr_config, J, T, n, q);
+        [next_config, nO_clusters, cluster_indices] = state_transition(curr_config, N, J, T, n, q);
         
         % ---------------------------------------
         % 2) Calc the quantitiy of interest
@@ -18,7 +18,7 @@ function [chi, nO_clusters] = swmc_chi (J, M, burns, q, T, n)
         % First need to calc n_max
         n_max = 0;
         for i = 1:q
-            n_max = max(nnz(curr_config(:) == i), n_max);
+            n_max = max(sum(curr_config(:) == i), n_max);
         end
         
         % Now calc m
@@ -33,6 +33,7 @@ function [chi, nO_clusters] = swmc_chi (J, M, burns, q, T, n)
         burns = 1;
     end
     
+    m_estimate = sum(m(burns:end)) / (M - burns);
     chi = (n / T) * var(m(burns:end));  
  end
 

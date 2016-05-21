@@ -1,6 +1,6 @@
-function [next_config, nO_clusters, cluster_indices] = state_transition (curr_config, J, T, n, q)
+function [next_config, nO_clusters, cluster_indices] = state_transition (curr_config, N, J, T, n, q)
     % Calculate Frozen bonds
-    F = frozen_bonds(curr_config, J, T, n);
+    F = frozen_bonds(curr_config, J, T, n, N);
 
     % Build graph and locate connected components
     [nO_clusters, cluster_indices] = graphconncomp(sparse(F), 'weak', true);

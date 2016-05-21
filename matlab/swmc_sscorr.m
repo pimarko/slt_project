@@ -1,4 +1,4 @@
-function [G] = swmc_sscorr (J, M, burns, q, n, T)
+function [G] = swmc_sscorr (N, J, M, burns, q, n, T)
     % Configuration states: record inital spin configuration
     curr_config = sample_spins(q, n);
 
@@ -10,7 +10,7 @@ function [G] = swmc_sscorr (J, M, burns, q, n, T)
         % ---------------------------------------
         % 1) State transition: S_n -> S_n+1
         % ---------------------------------------
-        [next_config, nO_clusters, cluster_indices] = state_transition(curr_config, J, T, n, q);
+        [next_config, nO_clusters, cluster_indices] = state_transition(curr_config, N, J, T, n, q);
         
         % ---------------------------------------
         % 2) Calc the quantitiy of interest
