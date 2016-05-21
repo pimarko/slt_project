@@ -13,8 +13,8 @@ import find_clusters
 import seaborn as sns
 
 #modify constants
-K_NN = 26
-VOXELS_GRID = [10,10,10]
+K_NN = 10
+VOXELS_GRID = [7,7,7]
 Q = 10
 M = 100
 eta = 0.97
@@ -150,7 +150,7 @@ def frozen_bounds(J_matrix,T,data_matrix):
 
 def get_Ttrans():
  	coeff = float(4*np.log(1+np.sqrt(Q)))
- 	return float(np.exp(-1/2))/float(coeff)
+ 	return float(np.exp(float(-1/2)))/float(coeff)
 
 
 def in_same_cluster_cij(clusters,i,j):
@@ -230,7 +230,7 @@ if(GENERATE_PLOT_CLUSTERS):
 	print T_spm
 	C_ij = np.zeros((voxel_num,voxel_num))
 	spins = np.random.randint(Q, size=(voxel_num,1))
-	spins = np.reshape(spins,(125,))
+	spins = np.reshape(spins,(voxel_num,))
 	data_matrix[:,-1] = spins
 	for itr in range(M):
 			frozen_bounds_indices = frozen_bounds(J_matrix,T_spm,data_matrix)
