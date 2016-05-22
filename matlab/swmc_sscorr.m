@@ -14,12 +14,14 @@ function [G] = swmc_sscorr (N, J, M, burns, q, n, T)
         
         % ---------------------------------------
         % 2) Calc the quantitiy of interest
-        % ---------------------------------------
+        % ----------------  -----------------------
         % Calculate indicator function
-        for i = 1:n
-            for j = 1:n
-                if cluster_indices(i) == cluster_indices(j) && iter > burns
-                    C(i, j) = C(i, j) + 1;
+        if iter > burns
+            for i = 1:n
+                for j = 1:n
+                    if cluster_indices(i) == cluster_indices(j)
+                        C(i, j) = C(i, j) + 1;
+                    end
                 end
             end
         end
@@ -30,8 +32,8 @@ function [G] = swmc_sscorr (N, J, M, burns, q, n, T)
     
     % Indicator function estimate
     C = C ./ (M - burns);
-    
+
     % spin-spin correlaction function
-    G = (((q - 1) .* C) + 1) ./ q;
+    G = (((q - 1) .* C) + ones(n, n)) ./ q;
 end
 

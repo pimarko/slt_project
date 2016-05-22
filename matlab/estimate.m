@@ -3,11 +3,11 @@ addpath('nifti');
 q       = 10; % Spin states
 M       = 100; % Monte carlo samples to draw
 burns   = 10; % Monte carlo burn samples
-i_max   = 7; % Patch size in i
-j_max   = 7; % Patch size in j
-k_max   = 7; % Patch size in k
+i_max   = 5; % Patch size in i
+j_max   = 5; % Patch size in j
+k_max   = 5; % Patch size in k
 n       = i_max * j_max * k_max; % Number of datapoints
-k       = 10; % Number of nearest neighbors
+k       = 26; % Number of nearest neighbors
 eta     = 0.97; % Exponential cooling
 
 % Read data (only of not already read)

@@ -4,6 +4,6 @@ function [mean_k] = mean_neighbors(N)
     for i = 1:width
         mean_k = mean_k + nnz(N(:, i));
     end
-    mean_k = mean_k / width;
+    mean_k = 2 * mean_k / width;
 end
 
