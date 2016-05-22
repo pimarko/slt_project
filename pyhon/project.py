@@ -14,10 +14,10 @@ import seaborn as sns
 
 #modify constants
 K_NN = 5
-VOXELS_GRID = [6,6,3]
+VOXELS_GRID = [7,7,3]
 Q = 10
 M = 100
-eta = 0.97
+eta = 0.95
 GENERATE_PLOT_SEARCH_SPM = True
 GENERATE_PLOT_CLUSTERS = True
 coord_num = 3
@@ -174,8 +174,8 @@ print "Data preprocessing - done."
 if(GENERATE_PLOT_SEARCH_SPM):
 	chi_temp = []
 
-	Ti = get_Ttrans() + 1 
-	Tf = get_Ttrans() - float(get_Ttrans())/float(5) 
+	Ti = get_Ttrans()*10
+	Tf = get_Ttrans()*0.1
 	T = Ti
 	temps = []
 	iter_num = 0
@@ -256,6 +256,12 @@ if(GENERATE_PLOT_CLUSTERS):
 	C_ij = C_ij*(Q-1)
 	G_ij = C_ij + np.ones((C_ij.shape[0],C_ij.shape[1]))
 	G_ij = G_ij/Q
+
+	plt.hist(np.reshape(G_ij,(G_ij.shape[0]*G_ij.shape[1],1)))
+	plt.xlabel('G_ij')
+	plt.ylabel('#')
+	plt.title('temperature ' + str(T_spm))
+	plt.show()
 
 	bound_clusters = dict()
 	for ii in range(G_ij.shape[0]):
