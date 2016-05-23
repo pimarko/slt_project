@@ -10,6 +10,7 @@ function [F] = frozen_bonds (curr_config, J, T, n, N)
                 prob_frozen = 1 - exp((-J(i, j) / T) * (curr_config(i) == curr_config(j)));
                 if rand() <= prob_frozen
                     F(i, j) = 1;
+                    F(j, i) = 1;
                 end
             end
         end
