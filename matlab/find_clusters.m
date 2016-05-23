@@ -1,11 +1,11 @@
-function [nO_Clusters, cluster_indices] = find_clusters (G, n)
+function [nO_Clusters, cluster_indices] = find_clusters (G, N, n)
     % Clusters linkage matrix
     cluster_linkage = eye(n, n);
     
     % Find linked vertices
     for i = 1:n
         for j = 1:n
-            if G(i, j) > 0.5
+            if is_neighbor(N, i, j) && G(i, j) > 0.5
                 cluster_linkage(i, j) = 1;
             end
         end

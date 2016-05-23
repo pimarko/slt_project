@@ -1,7 +1,7 @@
 addpath('nifti');
 
 q       = 10; % Spin states
-M       = 100; % Monte carlo samples to draw
+M       = 50; % Monte carlo samples to draw
 burns   = 10; % Monte carlo burn samples
 i_max   = 5; % Patch size in i
 j_max   = 5; % Patch size in j
@@ -59,21 +59,24 @@ G = swmc_sscorr(N, J, M, burns, q, n, T);
 % -----------------------------------------------------------------
 % 4) Find clusters
 % -----------------------------------------------------------------
-[nO_clusters, cluster_indices] = find_clusters(G, n);
+[nO_clusters, cluster_indices] = find_clusters(G, N, n);
 
 % -----------------------------------------------------------------
 % 5) Plot
 % -----------------------------------------------------------------
 %scatter3(coordinate_map(:, 1), coordinate_map(:, 2), coordinate_map(:, 3), 800, cluster_indices, 'filled', 'square');
 
-fig=figure; 
-hax=axes;  
-hold on 
-plot(Ts, chis) 
-line([T T],get(hax,'YLim'),'Color',[1 0 0])
+%fig=figure; 
+%hax=axes;  
+%hold on 
+%plot(Ts, chis) 
+%line([T T],get(hax,'YLim'),'Color',[1 0 0])
+
+%figure;
+%plot(Ts, ms)
 
 figure;
-plot(Ts, ms)
+hist(reshape(G, n*n, 1))
 
 %figure;
 %plot(Ts, clusters);

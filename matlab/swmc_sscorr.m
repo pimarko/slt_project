@@ -19,7 +19,7 @@ function [G] = swmc_sscorr (N, J, M, burns, q, n, T)
         if iter > burns
             for i = 1:n
                 for j = 1:n
-                    if cluster_indices(i) == cluster_indices(j)
+                    if is_neighbor(N, i, j) && cluster_indices(i) == cluster_indices(j)
                         C(i, j) = C(i, j) + 1;
                     end
                 end
@@ -32,8 +32,10 @@ function [G] = swmc_sscorr (N, J, M, burns, q, n, T)
     
     % Indicator function estimate
     C = C ./ (M - burns);
+    spy(C)
+    issymmetric(C)
 
-    % spin-spin correlaction function
+    % spin-spin correlation function
     G = (((q - 1) .* C) + ones(n, n)) ./ q;
 end
 

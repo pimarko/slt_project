@@ -59,7 +59,7 @@ function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_max, j_m
     end
     
     % Restrict to mutual neighbors only
-    for n = 1:n
+    for i = 1:n
         for j = 1:nO_neighbors
             if N(j, i) > 0 && nnz(N(:, N(j, i)) == i) == 0
                 N(j, i) = 0;
