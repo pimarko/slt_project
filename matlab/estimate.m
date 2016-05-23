@@ -1,13 +1,13 @@
 addpath('nifti');
 
 q       = 10; % Spin states
-M       = 50; % Monte carlo samples to draw
-burns   = 10; % Monte carlo burn samples
-i_max   = 5; % Patch size in i
-j_max   = 5; % Patch size in j
-k_max   = 5; % Patch size in k
+M       = 100; % Monte carlo samples to draw
+burns   = 0; % Monte carlo burn samples
+i_max   = 3; % Patch size in i
+j_max   = 3; % Patch size in j
+k_max   = 3; % Patch size in k
 n       = i_max * j_max * k_max; % Number of datapoints
-k       = 26; % Number of nearest neighbors
+k       = 5; % Number of nearest neighbors
 eta     = 0.97; % Exponential cooling
 
 % Read data (only of not already read)
@@ -64,19 +64,27 @@ G = swmc_sscorr(N, J, M, burns, q, n, T);
 % -----------------------------------------------------------------
 % 5) Plot
 % -----------------------------------------------------------------
-%scatter3(coordinate_map(:, 1), coordinate_map(:, 2), coordinate_map(:, 3), 800, cluster_indices, 'filled', 'square');
+scatter3(coordinate_map(:, 1), coordinate_map(:, 2), coordinate_map(:, 3), 800, cluster_indices, 'filled', 'square');
 
-%fig=figure; 
-%hax=axes;  
-%hold on 
-%plot(Ts, chis) 
-%line([T T],get(hax,'YLim'),'Color',[1 0 0])
+% Chi
+fig=figure; 
+hax=axes;  
+hold on 
+plot(Ts, chis) 
+line([T T],get(hax,'YLim'),'Color',[1 0 0])
+xlabel('T');
+ylabel('Chi');
 
-%figure;
-%plot(Ts, ms)
-
+% <m>
 figure;
-hist(reshape(G, n*n, 1))
+plot(Ts, ms)
+xlabel('T');
+ylabel('<m>');
+
+% G
+figure;
+hist(G(G >= 1/q))
+xlabel('G');
 
 %figure;
 %plot(Ts, clusters);

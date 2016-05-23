@@ -7,9 +7,10 @@ function [J] = couplings (N, k, D, n)
 
     % Coupling for all neightbors of datapoints i
     for i = 1:n
-        indices = N(N(:, i) > 0, i);
-        for j = indices'
-            J(i, j) = (1 / k) * exp(-D(i, j) / (2 * mean_diff^2));
+        for j = 1:n
+            if is_neighbor(N, i, j)
+                J(i, j) = (1 / k) * exp(-D(i, j) / (2 * mean_diff^2));
+            end
         end
     end
 end
