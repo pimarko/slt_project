@@ -1,3 +1,11 @@
+print(__doc__)
+
+from time import time
+
+# these two lines have to be inserted here
+import matplotlib
+matplotlib.use('Agg')
+
 #import libraries
 import nibabel as nib
 import numpy as np
@@ -13,8 +21,8 @@ import find_clusters
 import seaborn as sns
 
 #modify constants
-K_NN = 5
-VOXELS_GRID = [7,7,3]
+K_NN = 26
+VOXELS_GRID = [10,10,10]
 Q = 10
 M = 100
 eta = 0.95
@@ -90,14 +98,14 @@ def function_params(data_matrix,neighbours_matrix):
 	nnz = 0
 	for ii in range(voxel_num):
 		for jj in range(ii+1,voxel_num):
-			D[ii,jj] = np.square(np.linalg.norm(data_matrix[ii,3:-1] - data_matrix[jj,3:-1]))
+			D[ii,jj] = np.square(np.linalg.norm(data_matrix[ii,3:data_matrix.shape[1]-2] - data_matrix[jj,3:data_matrix.shape[1]-2]))
 			if(is_neighbour(neighbours_matrix,ii,jj)):
 				nnz = nnz + 1
 
 
-	elem_num = ((voxel_num-1)*(voxel_num))/2
-	mean_D = sum(sum(D))/elem_num
-	mean_K = (2*nnz)/voxel_num
+	elem_num = float((voxel_num-1)*(voxel_num))/float(2)
+	mean_D = float(sum(sum(D)))/float(elem_num)
+	mean_K = float(2*nnz)/float(voxel_num)
 
 	return D,mean_D,mean_K
 
@@ -132,7 +140,7 @@ def count_spins(spins):
 def frozen_bounds(J_matrix,T,data_matrix):
 	frozen_bounds_indices = {}
 	for ii in range(0,voxel_num):
-		frozen_bounds_indices[ii] = []
+		frozen_bounds_indices[ii] = [ii]
 		for jj in range(ii+1,voxel_num):
 			if(J_matrix[ii,jj] != 0):
 				if(data_matrix[ii, data_matrix.shape[1]-1] == data_matrix[jj, data_matrix.shape[1] - 1]):
@@ -144,7 +152,6 @@ def frozen_bounds(J_matrix,T,data_matrix):
 
 				rnum = np.random.uniform(0, 1)
 				if(rnum <= prob_frozen):
-					frozen_bounds_indices[ii].append(ii)
 					frozen_bounds_indices[ii].append(jj)
 
 	return frozen_bounds_indices
@@ -154,10 +161,10 @@ def get_Ttrans():
  	return float(np.exp(float(-1/2)))/float(coeff)
 
 
-def in_same_cluster_cij(clusters,i,j):
+def in_same_cluster_cij(clusters,ii,jj):
 	for key in clusters.keys():
 		values = clusters[key]
-		if((i in values) and (j in values)):
+		if((ii in values) and (jj in values)):
 			return True
 
 	return False
@@ -174,7 +181,7 @@ print "Data preprocessing - done."
 if(GENERATE_PLOT_SEARCH_SPM):
 	chi_temp = []
 
-	Ti = get_Ttrans()*10
+	Ti = get_Ttrans()*4
 	Tf = get_Ttrans()*0.1
 	T = Ti
 	temps = []
@@ -211,22 +218,22 @@ if(GENERATE_PLOT_SEARCH_SPM):
 	plt.xlabel('temperature')
 	plt.ylabel('cluster number')
 	plt.title('Relation between cluster number and temperature')
-	plt.show()
-
+	plt.savefig('plot_cluster_num_temps.png')
+	
 	plt.plot(temps,chi_temp,'-b')
 	plt.xlabel('temperature')
 	plt.ylabel('chi')
 	plt.title('Searching for super paramagnetic range')
-	plt.show()
-
+	plt.savefig('plot_chi_temps.png')
+	
 	plt.plot(temps,m_means,'-b')
 	plt.xlabel('temperature')
 	plt.ylabel('<m>')
 	plt.title('Relation between <m> and temperature')
-	plt.show()
+	plt.savefig('plot_m_temps.png')
 
 if(GENERATE_PLOT_CLUSTERS):
-	index_temp = chi_temp.index(max(chi_temp)) + 1
+	index_temp = chi_temp.index(max(chi_temp)) - 2
 	T_spm = temps[index_temp]
 	print T_spm
 	C_ij = np.zeros((voxel_num,voxel_num))
@@ -256,19 +263,22 @@ if(GENERATE_PLOT_CLUSTERS):
 	C_ij = C_ij*(Q-1)
 	G_ij = C_ij + np.ones((C_ij.shape[0],C_ij.shape[1]))
 	G_ij = G_ij/Q
+	array_Gij = []
+	for ii in range(G_ij.shape[0]):
+		for jj in range(ii+1,G_ij.shape[1]):
+			array_Gij.append(G_ij[ii,jj])
 
-	plt.hist(np.reshape(G_ij,(G_ij.shape[0]*G_ij.shape[1],1)))
+	plt.hist(array_Gij)
 	plt.xlabel('G_ij')
 	plt.ylabel('#')
 	plt.title('temperature ' + str(T_spm))
-	plt.show()
-
+	plt.savefig('plot_gij_hist.png')
+	
 	bound_clusters = dict()
 	for ii in range(G_ij.shape[0]):
-		bound_clusters[ii] = []
+		bound_clusters[ii] = [ii]
 	 	for jj in range(ii+1,G_ij.shape[1]):
 	 		if(G_ij[ii,jj] > 0.5):
-	 			bound_clusters[ii].append(ii)
 	 			bound_clusters[ii].append(jj)
 	
 	new_clusters = find_clusters.find_clusters(bound_clusters)
@@ -284,10 +294,10 @@ if(GENERATE_PLOT_CLUSTERS):
 
 	
 		c = next(palette)
-		ax.scatter(iss, jss, kss,c = c, marker = ',',s = 1000)
+		ax.scatter(iss, jss, kss,c = c, marker = ',',s = 2000)
 
-	ax.set_xlabel('i Label')
-	ax.set_ylabel('j Label')
-	ax.set_zlabel('k Label')
+	ax.set_xlabel('i')
+	ax.set_ylabel('j')
+	ax.set_zlabel('k')
 
-	plt.show()
+	plt.savefig('plot_final_clusters.png')
