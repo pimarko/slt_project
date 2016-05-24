@@ -22,12 +22,13 @@ function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_max, j_m
         for j = 1:j_max
             for k = 1:k_max
                 index_direction = 1;
-                for n = 1:164
+                for d = 1:164
                     % Only non-zero directions
-                    if bvecs(n, 1) ~= 0 && bvecs(n, 2) ~= 0 && bvecs(n, 3) ~= 0
+                    if bvecs(d, 1) ~= 0 || bvecs(d, 2) ~= 0 || bvecs(d, 3) ~= 0
                         % Signal strength in direction n
-                        X(index, index_direction) = data.img(i, j, k, n);
+                        X(index, index_direction) = data.img(i, j, k, d);
                         index_direction = index_direction + 1;
+                        %sprintf('%i, %i, %i, %i', i, j, k, d)
                     end
                 end
                 
@@ -45,7 +46,7 @@ function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_max, j_m
     
     % Neighbor and distance matrix
     N = zeros(nO_neighbors, n);
-    D = squareform(pdist(index_map), 'tomatrix');
+    D = squareform(pdist(X), 'tomatrix');
     D = D.^2;
     
     % Query k-nearest neighbors

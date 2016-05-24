@@ -6,7 +6,7 @@ function [J] = couplings (N, k, D, n)
     mean_diff = mean(mean(D));
 
     % Coupling for all neightbors of datapoints i
-    for i = 1:n
+    parfor i = 1:n
         for j = 1:n
             if is_neighbor(N, i, j)
                 J(i, j) = (1 / k) * exp(-D(i, j) / (2 * mean_diff^2));

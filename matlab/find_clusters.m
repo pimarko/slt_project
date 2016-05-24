@@ -3,7 +3,7 @@ function [nO_Clusters, cluster_indices] = find_clusters (G, N, n)
     cluster_linkage = eye(n, n);
     
     % Find linked vertices
-    for i = 1:n
+    parfor i = 1:n
         for j = 1:n
             if is_neighbor(N, i, j) && G(i, j) > 0.5
                 cluster_linkage(i, j) = 1;

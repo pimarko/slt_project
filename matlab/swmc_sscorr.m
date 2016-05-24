@@ -17,7 +17,7 @@ function [G] = swmc_sscorr (N, J, M, burns, q, n, T)
         % ----------------  -----------------------
         % Calculate indicator function
         if iter > burns
-            for i = 1:n
+            parfor i = 1:n
                 for j = 1:n
                     if is_neighbor(N, i, j) && cluster_indices(i) == cluster_indices(j)
                         C(i, j) = C(i, j) + 1;
