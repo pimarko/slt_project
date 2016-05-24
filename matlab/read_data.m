@@ -1,4 +1,4 @@
-function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_max, j_max, k_max)
+function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_init, i_max, j_init, j_max, k_init, k_max)
     % Count non-zero rows
     nO_nz_rows = size(bvecs(any(bvecs, 2), :), 1);
     
@@ -18,9 +18,9 @@ function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_max, j_m
     index = 1;
     
     % Extract voxel with direction vector n
-    for i = 1:i_max 
-        for j = 1:j_max
-            for k = 1:k_max
+    for i = i_init:i_init + i_max - 1
+        for j = j_init:j_init + j_max - 1
+            for k = k_init:k_init + k_max - 1
                 index_direction = 1;
                 for d = 1:164
                     % Only non-zero directions
@@ -33,8 +33,8 @@ function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_max, j_m
                 end
                 
                 % Update coordinate / index map
-                coordinate_map(i, j, k) = index;
-                index_map(index, : ) = [i, j ,k];
+                coordinate_map(i - i_init + 1, j - j_init + 1, k - k_init + 1) = index;
+                index_map(index, : ) = [i - i_init + 1, j - j_init + 1, k - k_init + 1];
                 
                 index = index + 1;
             end
@@ -50,11 +50,11 @@ function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_max, j_m
     D = D.^2;
     
     % Query k-nearest neighbors
-    for i = 1:i_max 
-        for j = 1:j_max
-            for k = 1:k_max
+    for i = i_init:i_init + i_max - 1
+        for j = j_init:j_init + j_max - 1
+            for k = k_init:k_init + k_max - 1
                 indices = knnsearch(Mdl, [i, j, k], 'K', nO_neighbors);
-                N(:, coordinate_map(i, j, k)) = indices;
+                N(:, coordinate_map(i - i_init + 1, j - j_init + 1, k - k_init + 1)) = indices;
             end
         end
     end

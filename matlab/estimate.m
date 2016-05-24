@@ -4,9 +4,15 @@ clearvars -except data bvecs
 q       = 10; % Spin states
 M       = 100; % Monte carlo samples to draw
 burns   = 0; % Monte carlo burn samples
+
+i_init  = 135;
+j_init  = 76;
+k_init  = 74;
+
 i_max   = 5; % Patch size in i
 j_max   = 5; % Patch size in j
 k_max   = 5; % Patch size in k
+
 n       = i_max * j_max * k_max; % Number of datapoints
 k       = 26; % Number of nearest neighbors
 eta     = 0.97; % Exponential cooling
@@ -20,7 +26,7 @@ end
 % -----------------------------------------------------------------
 % 1) Preprocessing: Load data and build neighborhood matrix
 % -----------------------------------------------------------------
-[X, N, D, coordinate_map] = read_data(data, bvecs, k, i_max, j_max, k_max);
+[X, N, D, coordinate_map] = read_data(data, bvecs, k, i_init, i_max, j_init, j_max, k_init, k_max);
 
 % -----------------------------------------------------------------
 % 2) Calculate couplings between neighbors
@@ -50,7 +56,7 @@ while T > T_final
 end
 
 % Locate temperature in the paramagnetic region
-T = Ts(find(chis == max(chis), 1, 'first') - 1)
+T = Ts(find(chis == max(chis), 1, 'first') + 1)
 
 % -----------------------------------------------------------------
 % 3) Calc the spin-spin correlation matrix
