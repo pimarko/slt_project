@@ -7,6 +7,7 @@ from time import time
 #matplotlib.use('Agg')
 
 #import libraries
+import matplotlib,numpy
 import nibabel as nib
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,18 +19,22 @@ from collections import Counter
 from mpl_toolkits.mplot3d import Axes3D
 import itertools
 import find_clusters
-import seaborn as sns
+from scipy.spatial import distance
+import matplotlib
+
 
 #modify constants
-K_NN = 26
-VOXELS_GRID = [5,5,5]
+K_NN = 6
+VOXELS_GRID = [11,11,11]
 Q = 10
 M = 100
 eta = 0.95
 GENERATE_PLOT_SEARCH_SPM = True
 GENERATE_PLOT_CLUSTERS = True
 coord_num = 3
-thres = 10
+thres = 5
+thres_pic = 1
+delta = 20
 
 #do not modify constants
 voxel_num = VOXELS_GRID[0]*VOXELS_GRID[1]*VOXELS_GRID[2]
@@ -110,8 +115,8 @@ def function_params(data_matrix,neighbours_matrix):
 	for ii in range(voxel_num):
 		for jj in range(ii+1,voxel_num):
 			if(is_neighbour(neighbours_matrix,ii,jj)):
-				D[ii,jj] = np.square(np.linalg.norm(data_matrix[ii,3:data_matrix.shape[1]-1] - data_matrix[jj,3:data_matrix.shape[1]-1]))
-				D_normal[ii,jj] = np.linalg.norm(data_matrix[ii,3:data_matrix.shape[1]-1] - data_matrix[jj,3:data_matrix.shape[1]-1])
+				D[ii,jj] = np.square(distance.euclidean(data_matrix[ii,3:data_matrix.shape[1]-1],data_matrix[jj,3:data_matrix.shape[1]-1]))
+				D_normal[ii,jj] = distance.euclidean(data_matrix[ii,3:data_matrix.shape[1]-1],data_matrix[jj,3:data_matrix.shape[1]-1])
 				nnz = nnz + 1
 
 
@@ -153,7 +158,7 @@ def count_spins(spins):
 def frozen_bounds(J_matrix,T,data_matrix):
 	frozen_bounds_indices = {}
 	for ii in range(0,voxel_num):
-		frozen_bounds_indices[ii] = [ii]
+		frozen_bounds_indices[ii] = []
 		for jj in range(ii+1,voxel_num):
 			if(J_matrix[ii,jj] != 0):
 				if(data_matrix[ii, data_matrix.shape[1]-1] == data_matrix[jj, data_matrix.shape[1] - 1]):
@@ -163,8 +168,10 @@ def frozen_bounds(J_matrix,T,data_matrix):
 
 				prob_frozen = 1 - float(exp((float(-1*J_matrix[ii,jj])/float(T))*kronecker))
 
+
 				rnum = np.random.uniform(0, 1)
 				if(rnum <= prob_frozen):
+					frozen_bounds_indices[ii].append(ii)
 					frozen_bounds_indices[ii].append(jj)
 
 	return frozen_bounds_indices
@@ -231,6 +238,34 @@ if(GENERATE_PLOT_SEARCH_SPM):
 		iter_num = iter_num + 1
 		print iter_num
 
+		####make gif
+		fig = plt.figure()
+		ax = fig.add_subplot(111, projection='3d')
+		colors = []
+		for name, hex in matplotlib.colors.cnames.iteritems():
+			colors.append(str(name))
+
+		i = 0
+		for key in clusters.keys():
+			values = clusters[key]
+			if(len(values) >= thres_pic):
+				iss = data_matrix[values,0]
+				jss = data_matrix[values,1]
+				kss = data_matrix[values,2]
+
+				#print colors[i]
+				ax.scatter(iss, jss, kss,c = colors[i], marker = ',',s = 1000)
+				i = (i+3)%len(colors)
+
+
+		ax.set_xlabel('i')
+		ax.set_ylabel('j')
+		ax.set_zlabel('k')
+
+		plt.savefig('gif/plot_final_clusters_' + str(iter_num) + '.png')
+		plt.close("all")
+		#####
+
 	plt.plot(temps,cluster_num,'-b')
 	plt.xlabel('temperature')
 	plt.ylabel('cluster number')
@@ -238,7 +273,21 @@ if(GENERATE_PLOT_SEARCH_SPM):
 	#plt.savefig('plot_cluster_num_temps.png')
 	plt.show()
 
-	index_temp = chi_temp.index(max(chi_temp)) - 15
+	
+	plt.plot(temps,m_means,'-b')
+	plt.xlabel('temperature')
+	plt.ylabel('<m>')
+	plt.title('Relation between <m> and temperature')
+	#plt.savefig('plot_m_temps.png')
+	plt.show()
+
+	#find index of superparamagnetic to paramagnetic
+	for ii in range(1,len(chi_temp)):
+		if(chi_temp[ii] > chi_temp[ii-1] + delta):
+			index_temp = ii+1 #should be in range, as the temperatures before have chi 0 for sure
+			break
+	
+	#index_temp = chi_temp.index(max(chi_temp))
 	T_spm = temps[index_temp]
 	print T_spm
 
@@ -249,14 +298,8 @@ if(GENERATE_PLOT_SEARCH_SPM):
 	#plt.savefig('plot_chi_temps.png')
 	plt.show()
 	
-	plt.plot(temps,m_means,'-b')
-	plt.xlabel('temperature')
-	plt.ylabel('<m>')
-	plt.title('Relation between <m> and temperature')
-	#plt.savefig('plot_m_temps.png')
-	plt.show()
-	
 if(GENERATE_PLOT_CLUSTERS):
+	#T_spm = 0.0983282258797
 	C_ij = np.zeros((voxel_num,voxel_num))
 	G_ij = np.zeros((voxel_num,voxel_num))
 	spins = np.random.randint(Q, size=(voxel_num,))
@@ -299,9 +342,10 @@ if(GENERATE_PLOT_CLUSTERS):
 	
 	bound_clusters = dict()
 	for ii in range(G_ij.shape[0]):
-		bound_clusters[ii] = [ii]
+		bound_clusters[ii] = []
 	 	for jj in range(ii+1,G_ij.shape[1]):
 	 		if(G_ij[ii,jj] > 0.5):
+	 			bound_clusters[ii].append(jj)
 	 			bound_clusters[ii].append(jj)
 	
 	new_clusters = find_clusters.find_clusters(bound_clusters)
@@ -311,7 +355,11 @@ if(GENERATE_PLOT_CLUSTERS):
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
-	mmax = np.max(new_clusters.keys())
+	colors = []
+	for name, hex in matplotlib.colors.cnames.iteritems():
+		colors.append(str(name))
+
+	i = 0
 	for key in new_clusters.keys():
 		values = new_clusters[key]
 		if(len(values) > thres):
@@ -319,7 +367,9 @@ if(GENERATE_PLOT_CLUSTERS):
 			jss = data_matrix[values,1]
 			kss = data_matrix[values,2]
 
-			ax.scatter(iss, jss, kss,c = [[key/float(mmax),key/float(mmax),key/float(mmax)]], marker = ',',s = 1000)
+			print colors[i]
+			ax.scatter(iss, jss, kss,c = colors[i], marker = ',',s = 1000)
+			i = (i+3)%len(colors)
 
 
 	ax.set_xlabel('i')
