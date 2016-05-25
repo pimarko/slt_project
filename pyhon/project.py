@@ -25,16 +25,17 @@ import matplotlib
 
 #modify constants
 K_NN = 6
-VOXELS_GRID = [11,11,11]
+VOXELS_GRID = [6,6,6]
 Q = 10
-M = 100
+M = 50
 eta = 0.95
 GENERATE_PLOT_SEARCH_SPM = True
 GENERATE_PLOT_CLUSTERS = True
 coord_num = 3
-thres = 5
+thres = 3
 thres_pic = 1
 delta = 20
+percent_in_cluster = 5
 
 #do not modify constants
 voxel_num = VOXELS_GRID[0]*VOXELS_GRID[1]*VOXELS_GRID[2]
@@ -49,6 +50,7 @@ i_step = VOXELS_GRID[0]
 j_step = VOXELS_GRID[1] 
 k_step = VOXELS_GRID[2] 
 
+min_cluster_size = float(percent_in_cluster) * (float(voxel_num)/float(100))
 
 #definitions
 def build_data_matrix():	
@@ -204,12 +206,13 @@ if(GENERATE_PLOT_SEARCH_SPM):
 	chi_temp = []
 	ttrans = get_Ttrans(data_matrix,neighbours_matrix)
 	print ttrans
-	Ti = ttrans*4
+	Ti = ttrans*3
 	Tf = ttrans*0.1
 	T = Ti
 	temps = []
 	iter_num = 1
 	cluster_num = []
+	clusters_sizes = []
 	m_means = []
 	while(T > Tf):
 		m_steps = []
@@ -219,6 +222,7 @@ if(GENERATE_PLOT_SEARCH_SPM):
 			frozen_bounds_indices = frozen_bounds(J_matrix,T,data_matrix)
 
 			clusters = find_clusters.find_clusters(frozen_bounds_indices)
+			current_cluster_sizes = []
 			for key in clusters.keys():
 				values = clusters[key]
 				data_matrix[values,-1] = np.random.randint(Q)
@@ -228,15 +232,23 @@ if(GENERATE_PLOT_SEARCH_SPM):
 			if(itr > 9):
 				m_steps.append(m)	
 		
+		current_cluster_sizes = []
+		for key in clusters.keys():
+			values = clusters[key]
+			if(len(values) >= min_cluster_size):
+				current_cluster_sizes.append(len(values))
+
 		temps.append(T)
 		chi = get_chi(m_steps,T)
 		m_means.append(np.mean(m_steps))
 		chi_temp.append(chi)
 		cluster_num.append(len(clusters.keys()))
+		clusters_sizes.append(len(current_cluster_sizes))
+		print "Current cluster sizes with more than : " + str(min_cluster_size) + " elements: " + str(current_cluster_sizes) 
 
 		T = Ti*(np.power(eta,iter_num))
 		iter_num = iter_num + 1
-		print iter_num
+		print "Iter: " + str(iter_num)
 
 		####make gif
 		fig = plt.figure()
@@ -254,6 +266,7 @@ if(GENERATE_PLOT_SEARCH_SPM):
 				kss = data_matrix[values,2]
 
 				#print colors[i]
+				ax.set_title("Temp = " + str(T), y = 1.08)
 				ax.scatter(iss, jss, kss,c = colors[i], marker = ',',s = 1000)
 				i = (i+3)%len(colors)
 
@@ -266,7 +279,22 @@ if(GENERATE_PLOT_SEARCH_SPM):
 		plt.close("all")
 		#####
 
-	plt.plot(temps,cluster_num,'-b')
+	#find index of superparamagnetic to paramagnetic
+	index_temp_tmp = clusters_sizes.index(max(clusters_sizes)) #check the cluster num to see where the jump appears
+	
+	tmp_cluster_num_diff = []
+	for ii in range(0,len(cluster_num)-1):
+		tmp_cluster_num_diff.append(cluster_num[ii] - cluster_num[ii+1])
+
+	print "Tmp cluster num diff " + str(tmp_cluster_num_diff)
+	index_max_diff = tmp_cluster_num_diff.index(max(np.abs(tmp_cluster_num_diff)))
+	print "Max index: " + str(index_max_diff)
+	
+	print clusters_sizes
+	print max(clusters_sizes)
+	print index_temp_tmp
+
+	plt.plot(temps,cluster_num,'-b',temps[index_max_diff],cluster_num[index_max_diff],'-o')
 	plt.xlabel('temperature')
 	plt.ylabel('cluster number')
 	plt.title('Relation between cluster number and temperature')
@@ -281,17 +309,12 @@ if(GENERATE_PLOT_SEARCH_SPM):
 	#plt.savefig('plot_m_temps.png')
 	plt.show()
 
-	#find index of superparamagnetic to paramagnetic
-	for ii in range(1,len(chi_temp)):
-		if(chi_temp[ii] > chi_temp[ii-1] + delta):
-			index_temp = ii+1 #should be in range, as the temperatures before have chi 0 for sure
-			break
 	
 	#index_temp = chi_temp.index(max(chi_temp))
-	T_spm = temps[index_temp]
+	T_spm = temps[index_max_diff]
 	print T_spm
 
-	plt.plot(temps,chi_temp,'-b',temps[index_temp],chi_temp[index_temp],'-o')
+	plt.plot(temps,chi_temp,'-b')
 	plt.xlabel('temperature')
 	plt.ylabel('chi')
 	plt.title('Searching for super paramagnetic range')
