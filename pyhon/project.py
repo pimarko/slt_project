@@ -24,7 +24,7 @@ import seaborn as sns
 K_NN = 26
 VOXELS_GRID = [5,5,5]
 Q = 10
-M = 20
+M = 100
 eta = 0.95
 GENERATE_PLOT_SEARCH_SPM = True
 GENERATE_PLOT_CLUSTERS = True
@@ -109,16 +109,16 @@ def function_params(data_matrix,neighbours_matrix):
 	nnz = 0
 	for ii in range(voxel_num):
 		for jj in range(ii+1,voxel_num):
-			D[ii,jj] = np.square(np.linalg.norm(data_matrix[ii,3:data_matrix.shape[1]-2] - data_matrix[jj,3:data_matrix.shape[1]-2]))
-			D_normal[ii,jj] = np.linalg.norm(data_matrix[ii,3:data_matrix.shape[1]-2] - data_matrix[jj,3:data_matrix.shape[1]-2])
 			if(is_neighbour(neighbours_matrix,ii,jj)):
+				D[ii,jj] = np.square(np.linalg.norm(data_matrix[ii,3:data_matrix.shape[1]-1] - data_matrix[jj,3:data_matrix.shape[1]-1]))
+				D_normal[ii,jj] = np.linalg.norm(data_matrix[ii,3:data_matrix.shape[1]-1] - data_matrix[jj,3:data_matrix.shape[1]-1])
 				nnz = nnz + 1
 
 
-	elem_num = float((voxel_num-1)*(voxel_num))/float(2)
-	mean_D = float(sum(sum(D)))/float(elem_num)
+	#elem_num = float((voxel_num-1)*(voxel_num))/float(2)
+	mean_D = float(sum(sum(D)))/float(nnz)
 	mean_K = float(2*nnz)/float(voxel_num)
-	mean_D_normal = float(sum(sum(D_normal)))/float(elem_num)
+	mean_D_normal = float(sum(sum(D_normal)))/float(nnz)
 
 	return D,mean_D,mean_K,mean_D_normal
 
@@ -161,7 +161,7 @@ def frozen_bounds(J_matrix,T,data_matrix):
 				else:
 					kronecker = 0
 
-				prob_frozen = 1 - exp((float(-1*J_matrix[ii,jj])/float(T))*kronecker)
+				prob_frozen = 1 - float(exp((float(-1*J_matrix[ii,jj])/float(T))*kronecker))
 
 				rnum = np.random.uniform(0, 1)
 				if(rnum <= prob_frozen):
@@ -171,8 +171,9 @@ def frozen_bounds(J_matrix,T,data_matrix):
 
 def get_Ttrans(data_matrix,neighbours_matrix):
 	D,mean_D,mean_K,mean_D_normal = function_params(data_matrix,neighbours_matrix)
- 	coeff = float(4*float(np.log10(1+float(np.sqrt(Q)))))
+ 	coeff = float(4*float(np.log(1+float(np.sqrt(Q)))))
  	exponent = -1*float(mean_D)/float(2*mean_D_normal*mean_D_normal)
+
  	return float(np.exp(float(exponent)))/float(coeff)
 
 def in_same_cluster_cij(clusters,ii,jj):
@@ -195,15 +196,18 @@ print "Data preprocessing - done."
 if(GENERATE_PLOT_SEARCH_SPM):
 	chi_temp = []
 	ttrans = get_Ttrans(data_matrix,neighbours_matrix)
+	print ttrans
 	Ti = ttrans*4
-	Tf = float(ttrans)*0.1
+	Tf = ttrans*0.1
 	T = Ti
 	temps = []
-	iter_num = 0
+	iter_num = 1
 	cluster_num = []
 	m_means = []
 	while(T > Tf):
 		m_steps = []
+		spins = np.random.randint(Q, size=(voxel_num,))
+		data_matrix[:,-1] = spins
 		for itr in range(M):
 			frozen_bounds_indices = frozen_bounds(J_matrix,T,data_matrix)
 
@@ -234,7 +238,7 @@ if(GENERATE_PLOT_SEARCH_SPM):
 	#plt.savefig('plot_cluster_num_temps.png')
 	plt.show()
 
-	index_temp = chi_temp.index(max(chi_temp)) - 1
+	index_temp = chi_temp.index(max(chi_temp)) - 15
 	T_spm = temps[index_temp]
 	print T_spm
 
@@ -255,8 +259,7 @@ if(GENERATE_PLOT_SEARCH_SPM):
 if(GENERATE_PLOT_CLUSTERS):
 	C_ij = np.zeros((voxel_num,voxel_num))
 	G_ij = np.zeros((voxel_num,voxel_num))
-	spins = np.random.randint(Q, size=(voxel_num,1))
-	spins = np.reshape(spins,(voxel_num,))
+	spins = np.random.randint(Q, size=(voxel_num,))
 	data_matrix[:,-1] = spins
 	for itr in range(M):
 			frozen_bounds_indices = frozen_bounds(J_matrix,T_spm,data_matrix)
@@ -316,7 +319,7 @@ if(GENERATE_PLOT_CLUSTERS):
 			jss = data_matrix[values,1]
 			kss = data_matrix[values,2]
 
-			ax.scatter(iss, jss, kss,c = [[key/float(mmax),key/float(mmax),key/float(mmax)]], marker = ',',s = 2000)
+			ax.scatter(iss, jss, kss,c = [[key/float(mmax),key/float(mmax),key/float(mmax)]], marker = ',',s = 1000)
 
 
 	ax.set_xlabel('i')
