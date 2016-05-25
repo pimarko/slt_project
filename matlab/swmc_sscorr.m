@@ -32,8 +32,6 @@ function [G] = swmc_sscorr (N, J, M, burns, q, n, T)
     
     % Indicator function estimate
     C = C ./ (M - burns);
-    spy(C)
-    issymmetric(C)
 
     % spin-spin correlation function
     G = (((q - 1) .* C) + ones(n, n)) ./ q;

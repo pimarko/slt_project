@@ -1,4 +1,4 @@
-function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_init, i_max, j_init, j_max, k_init, k_max)
+function [X, N, D, mean_D_normal, index_map] = read_data (data, bvecs, nO_neighbors, i_init, i_max, j_init, j_max, k_init, k_max)
     % Count non-zero rows
     nO_nz_rows = size(bvecs(any(bvecs, 2), :), 1);
     
@@ -47,6 +47,7 @@ function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_init, i_
     % Neighbor and distance matrix
     N = zeros(nO_neighbors, n);
     D = squareform(pdist(X), 'tomatrix');
+    mean_D_normal = mean(mean(D));
     D = D.^2;
     
     % Query k-nearest neighbors
@@ -60,12 +61,12 @@ function [X, N, D, index_map] = read_data (data, bvecs, nO_neighbors, i_init, i_
     end
     
     % Restrict to mutual neighbors only
-    for i = 1:n
-        for j = 1:nO_neighbors
-            if N(j, i) > 0 && nnz(N(:, N(j, i)) == i) == 0
-                N(j, i) = 0;
-            end
-        end
-    end
+%     for i = 1:n
+%         for j = 1:nO_neighbors
+%             if N(j, i) > 0 && nnz(N(:, N(j, i)) == i) == 0
+%                 N(j, i) = 0;
+%             end
+%         end
+%     end
 end
 
