@@ -26,9 +26,10 @@ import matplotlib
 
 #modify constants
 K_NN = 26
-VOXELS_GRID = [5,5,5]
+K_NN_SUBSET = 6
+VOXELS_GRID = [7,7,7]
 Q = 10
-M = 100
+M = 50
 eta = 0.95
 GENERATE_PLOT_SEARCH_SPM = True
 GENERATE_PLOT_CLUSTERS = True
@@ -143,7 +144,7 @@ def function_params(data_matrix,neighbours_matrix):
 			
 			# Nur wenn es noch neighbors gitb zum loeschen
 			#k_nn_half = math.floor((K_NN-1) / 2)
-			k_nn_half = 6
+			k_nn_half = K_NN_SUBSET
 			distances = distances[np.lexsort(np.fliplr(distances).T)] # Sort
 			
 			if (len(distances[:, 0]) > k_nn_half):
