@@ -366,10 +366,18 @@ if(GENERATE_PLOT_CLUSTERS):
 	bound_clusters = dict()
 	for ii in range(G_ij.shape[0]):
 		bound_clusters[ii] = []
+		bs_max_index = 0; # Boundary smoothing
+		bs_max_value = -1; # Boundary smoothing
 	 	for jj in range(ii+1,G_ij.shape[1]):
-	 		if(G_ij[ii,jj] > 0.5):
+	 		if (G_ij[ii, jj] > bs_max_value): # Boundary smoothing
+	 			bs_max_value = G_ij[ii, jj]
+				bs_max_index = jj;
+
+	 		if (G_ij[ii,jj] > 0.5):
 	 			bound_clusters[ii].append(jj)
 	 			bound_clusters[ii].append(jj)
+
+		bound_clusters[ii].append(bs_max_index) # Boundary smoothing
 	
 	new_clusters = find_clusters.find_clusters(bound_clusters)
 

@@ -1,4 +1,6 @@
 matlab/data/*
 pyhon/bvecs
+pyhon/gif/*
 pyhon/diff_data.nii
 pyhon/diff_data.nii.gz
+*.pyc
