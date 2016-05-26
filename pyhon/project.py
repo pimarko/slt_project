@@ -25,14 +25,15 @@ import matplotlib
 
 
 #modify constants
-K_NN = 7
+K_NN = 26
 VOXELS_GRID = [5,5,5]
 Q = 10
-M = 20
+M = 100
 eta = 0.95
 GENERATE_PLOT_SEARCH_SPM = True
 GENERATE_PLOT_CLUSTERS = True
-SUBSET_KNN = False
+SUBSET_KNN = True
+SMOOTHING = False
 coord_num = 3
 thres = 3
 thres_pic = 1
@@ -133,7 +134,6 @@ def function_params(data_matrix,neighbours_matrix):
 			idx = 0
 			for nn in neighbors:
 				if nn != -1:
-					#print D_normal[ii, :]
 					distances[idx, 0] = D_normal[ii, nn]
 					distances[idx, 1] = int(nn)
 					idx = idx + 1
@@ -142,7 +142,8 @@ def function_params(data_matrix,neighbours_matrix):
 			distances = distances[distances[:, 0] > 0, :]
 			
 			# Nur wenn es noch neighbors gitb zum loeschen
-			k_nn_half = math.floor((K_NN-1) / 2)
+			#k_nn_half = math.floor((K_NN-1) / 2)
+			k_nn_half = 6
 			distances = distances[np.lexsort(np.fliplr(distances).T)] # Sort
 			
 			if (len(distances[:, 0]) > k_nn_half):
@@ -156,6 +157,13 @@ def function_params(data_matrix,neighbours_matrix):
 					neighbours_matrix[ii, neighbours_matrix[ii, :] == nn] = -1
 					D[ii, nn] = 0
 					D_normal[ii, nn] = 0
+
+		for cur_voxel in range(voxel_num):
+			neighbours = neighbours_matrix[cur_voxel,:]
+			for ind in range(len(neighbours)):
+				neighbour = int(neighbours[ind])
+				if(cur_voxel not in neighbours_matrix[neighbour,:]):
+					neighbours_matrix[cur_voxel,ind] = -1
 				else:
 					nnz = nnz + 1
 
@@ -322,7 +330,14 @@ if(GENERATE_PLOT_SEARCH_SPM):
 		tmp_cluster_num_diff.append(cluster_num[ii] - cluster_num[ii+1])
 
 	print "Tmp cluster num diff " + str(tmp_cluster_num_diff)
-	index_max_diff = tmp_cluster_num_diff.index(max(np.abs(tmp_cluster_num_diff)))
+
+	e_max = max(np.abs(tmp_cluster_num_diff))
+	for e in reversed(tmp_cluster_num_diff):
+		if e_max == abs(e):
+			e_max = e
+			break
+
+	index_max_diff = tmp_cluster_num_diff.index(e_max)
 	print "Max index: " + str(index_max_diff)
 	
 	print clusters_sizes
@@ -411,8 +426,9 @@ if(GENERATE_PLOT_CLUSTERS):
 	 		if (G_ij[ii,jj] > 0.5):
 	 			bound_clusters[ii].append(jj)
 	 			bound_clusters[ii].append(jj)
-
-		bound_clusters[ii].append(bs_max_index) # Boundary smoothing
+	 	
+	 	if (SMOOTHING):
+			bound_clusters[ii].append(bs_max_index) # Boundary smoothing
 	
 	new_clusters = find_clusters.find_clusters(bound_clusters)
 
