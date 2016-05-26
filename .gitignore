@@ -1,1 +1,4 @@
 matlab/data/*
+pyhon/bvecs
+pyhon/diff_data.nii
+pyhon/diff_data.nii.gz
