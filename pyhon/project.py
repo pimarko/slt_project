@@ -25,13 +25,14 @@ import matplotlib
 
 
 #modify constants
-K_NN = 27
+K_NN = 7
 VOXELS_GRID = [5,5,5]
 Q = 10
-M = 50
+M = 20
 eta = 0.95
 GENERATE_PLOT_SEARCH_SPM = True
 GENERATE_PLOT_CLUSTERS = True
+SUBSET_KNN = False
 coord_num = 3
 thres = 3
 thres_pic = 1
@@ -123,39 +124,40 @@ def function_params(data_matrix,neighbours_matrix):
 				nnz = nnz + 1
 
 	# Get the knn voxels with the largest signal strength
-	nnz = 0
-	for ii in range(voxel_num):
-		neighbors = neighbours_matrix[ii, :]
-		distances = np.zeros((K_NN-1, 2))
+	if (SUBSET_KNN):
+		nnz = 0
+		for ii in range(voxel_num):
+			neighbors = neighbours_matrix[ii, :]
+			distances = np.zeros((K_NN-1, 2))
 
-		idx = 0
-		for nn in neighbors:
-			if nn != -1:
-				#print D_normal[ii, :]
-				distances[idx, 0] = D_normal[ii, nn]
-				distances[idx, 1] = int(nn)
-				idx = idx + 1
+			idx = 0
+			for nn in neighbors:
+				if nn != -1:
+					#print D_normal[ii, :]
+					distances[idx, 0] = D_normal[ii, nn]
+					distances[idx, 1] = int(nn)
+					idx = idx + 1
 
-		# Nur distances von effektiven neighbors	
-		distances = distances[distances[:, 0] > 0, :]
-		
-		# Nur wenn es noch neighbors gitb zum loeschen
-		k_nn_half = math.floor((K_NN-1) / 2)
-		distances = distances[np.lexsort(np.fliplr(distances).T)] # Sort
-		
-		if (len(distances[:, 0]) > k_nn_half):
-			keep_knn = distances[0:k_nn_half, 1]
-		else:
-			keep_knn = neighbors
-
-		# Erease not used neighbors
-		for nn in neighbors:
-			if(nn != -1 and (nn not in keep_knn)):
-				neighbours_matrix[ii, neighbours_matrix[ii, :] == nn] = -1
-				D[ii, nn] = 0
-				D_normal[ii, nn] = 0
+			# Nur distances von effektiven neighbors	
+			distances = distances[distances[:, 0] > 0, :]
+			
+			# Nur wenn es noch neighbors gitb zum loeschen
+			k_nn_half = math.floor((K_NN-1) / 2)
+			distances = distances[np.lexsort(np.fliplr(distances).T)] # Sort
+			
+			if (len(distances[:, 0]) > k_nn_half):
+				keep_knn = distances[0:k_nn_half, 1]
 			else:
-				nnz = nnz + 1
+				keep_knn = neighbors
+
+			# Erease not used neighbors
+			for nn in neighbors:
+				if(nn != -1 and (nn not in keep_knn)):
+					neighbours_matrix[ii, neighbours_matrix[ii, :] == nn] = -1
+					D[ii, nn] = 0
+					D_normal[ii, nn] = 0
+				else:
+					nnz = nnz + 1
 
 	#elem_num = float((voxel_num-1)*(voxel_num))/float(2)
 	mean_D = float(sum(sum(D)))/float(nnz)
