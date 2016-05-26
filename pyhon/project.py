@@ -12,6 +12,7 @@ import nibabel as nib
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import math
 from sklearn.neighbors import BallTree
 from math import exp
 from random import randint
@@ -24,8 +25,8 @@ import matplotlib
 
 
 #modify constants
-K_NN = 6
-VOXELS_GRID = [6,6,6]
+K_NN = 27
+VOXELS_GRID = [5,5,5]
 Q = 10
 M = 50
 eta = 0.95
@@ -105,7 +106,7 @@ def build_knn_matrix(data_matrix):
 	return neighbours_matrix
 
 def is_neighbour(neighbours_matrix,i,j):
-	if(i in neighbours_matrix[j,:]):
+	if((i in neighbours_matrix[j,:]) and (j in neighbours_matrix[i,:])):
 		return True
 	else:
 		return False
@@ -121,17 +122,49 @@ def function_params(data_matrix,neighbours_matrix):
 				D_normal[ii,jj] = distance.euclidean(data_matrix[ii,3:data_matrix.shape[1]-1],data_matrix[jj,3:data_matrix.shape[1]-1])
 				nnz = nnz + 1
 
+	# Get the knn voxels with the largest signal strength
+	nnz = 0
+	for ii in range(voxel_num):
+		neighbors = neighbours_matrix[ii, :]
+		distances = np.zeros((K_NN-1, 2))
+
+		idx = 0
+		for nn in neighbors:
+			if nn != -1:
+				#print D_normal[ii, :]
+				distances[idx, 0] = D_normal[ii, nn]
+				distances[idx, 1] = int(nn)
+				idx = idx + 1
+
+		# Nur distances von effektiven neighbors	
+		distances = distances[distances[:, 0] > 0, :]
+		
+		# Nur wenn es noch neighbors gitb zum loeschen
+		k_nn_half = math.floor((K_NN-1) / 2)
+		distances = distances[np.lexsort(np.fliplr(distances).T)] # Sort
+		
+		if (len(distances[:, 0]) > k_nn_half):
+			keep_knn = distances[0:k_nn_half, 1]
+		else:
+			keep_knn = neighbors
+
+		# Erease not used neighbors
+		for nn in neighbors:
+			if(nn != -1 and (nn not in keep_knn)):
+				neighbours_matrix[ii, neighbours_matrix[ii, :] == nn] = -1
+				D[ii, nn] = 0
+				D_normal[ii, nn] = 0
+			else:
+				nnz = nnz + 1
 
 	#elem_num = float((voxel_num-1)*(voxel_num))/float(2)
 	mean_D = float(sum(sum(D)))/float(nnz)
 	mean_K = float(2*nnz)/float(voxel_num)
 	mean_D_normal = float(sum(sum(D_normal)))/float(nnz)
-
 	return D,mean_D,mean_K,mean_D_normal
 
-def build_J_matrix(neighbours_matrix,data_matrix):
+def build_J_matrix(neighbours_matrix,data_matrix, D,mean_D,mean_K,mean_D_normal):
 	J_matrix = np.zeros((voxel_num,voxel_num))
-	D,mean_D,mean_K,mean_D_normal = function_params(data_matrix,neighbours_matrix)
 
 	for ii in range(voxel_num):
 		for jj in range(ii+1,voxel_num):
@@ -178,8 +211,7 @@ def frozen_bounds(J_matrix,T,data_matrix):
 
 	return frozen_bounds_indices
 
-def get_Ttrans(data_matrix,neighbours_matrix):
-	D,mean_D,mean_K,mean_D_normal = function_params(data_matrix,neighbours_matrix)
+def get_Ttrans(data_matrix,neighbours_matrix, D,mean_D,mean_K,mean_D_normal):
  	coeff = float(4*float(np.log(1+float(np.sqrt(Q)))))
  	exponent = -1*float(mean_D)/float(2*mean_D_normal*mean_D_normal)
 
@@ -197,14 +229,15 @@ def in_same_cluster_cij(clusters,ii,jj):
 #data preprocessing
 data_matrix = build_data_matrix()
 neighbours_matrix = build_knn_matrix(data_matrix)
-J_matrix = build_J_matrix(neighbours_matrix,data_matrix)
+D,mean_D,mean_K,mean_D_normal = function_params(data_matrix,neighbours_matrix)
+J_matrix = build_J_matrix(neighbours_matrix,data_matrix, D,mean_D,mean_K,mean_D_normal)
 
 print "Data preprocessing - done."
 
 #algorithm
 if(GENERATE_PLOT_SEARCH_SPM):
 	chi_temp = []
-	ttrans = get_Ttrans(data_matrix,neighbours_matrix)
+	ttrans = get_Ttrans(data_matrix,neighbours_matrix, D,mean_D,mean_K,mean_D_normal)
 	print ttrans
 	Ti = ttrans*3
 	Tf = ttrans*0.1
@@ -294,7 +327,7 @@ if(GENERATE_PLOT_SEARCH_SPM):
 	print max(clusters_sizes)
 	print index_temp_tmp
 
-	plt.plot(temps,cluster_num,'-b',temps[index_max_diff],cluster_num[index_max_diff],'-o')
+	plt.plot(temps,cluster_num,'-b',temps[index_max_diff-1],cluster_num[index_max_diff-1],'-o')
 	plt.xlabel('temperature')
 	plt.ylabel('cluster number')
 	plt.title('Relation between cluster number and temperature')
