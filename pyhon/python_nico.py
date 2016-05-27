@@ -36,10 +36,8 @@ GENERATE_PLOT_SEARCH_SPM = True
 GENERATE_PLOT_CLUSTERS = True
 SUBSET_KNN = True
 SMOOTHING = False
-coord_num = 3
 thres = 1
 thres_pic = 1
-delta = 20
 percent_in_cluster = 5
 DISIMILARITY_MEASURE_INNER_PRODUCT = False
 NORMALIZE_0_1 = False
@@ -48,6 +46,7 @@ init_j = 76
 init_k = 74
 
 #do not modify constants
+coord_num = 3
 voxel_num = VOXELS_GRID[0]*VOXELS_GRID[1]*VOXELS_GRID[2]
 i = VOXELS_GRID[0] + init_i
 j = VOXELS_GRID[1] + init_j
@@ -159,11 +158,8 @@ def function_params(data_matrix,neighbours_matrix):
 					distances[idx, 1] = int(nn)
 					idx = idx + 1
 
-			# Nur distances von effektiven neighbors	
 			distances = distances[distances[:, 0] > 0, :]
 			
-			# Nur wenn es noch neighbors gitb zum loeschen
-			#k_nn_half = math.floor((K_NN-1) / 2)
 			k_nn_half = K_NN_SUBSET
 			distances = distances[np.lexsort(np.fliplr(distances).T)] # Sort
 			
