@@ -8,7 +8,7 @@ In order to get all libraries run the following code in terminal/command line
 
 To obtain the clusterin, run
 
-python project.py
+**python project.py**
 
 ### Module find_clusters.py
 
