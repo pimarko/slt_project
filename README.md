@@ -6,7 +6,7 @@ In order to get all libraries run the following code in terminal/command line
 
 ./install.sh
 
-To obtain the clusterin, run
+To obtain the clustering, run
 
 **python project.py**
 
