@@ -22,31 +22,33 @@ import itertools
 import find_clusters
 from scipy.spatial import distance
 import matplotlib
+from sklearn import preprocessing
 
 
 #modify constants
 K_NN = 6
 K_NN_SUBSET = 6
-VOXELS_GRID = [6,6,6]
+VOXELS_GRID = [10,10,10]
 Q = 10
 M = 100
 eta = 0.95
 GENERATE_PLOT_SEARCH_SPM = True
 GENERATE_PLOT_CLUSTERS = True
-SUBSET_KNN = False
+SUBSET_KNN = True
 SMOOTHING = False
 coord_num = 3
-thres = 3
+thres = 1
 thres_pic = 1
 delta = 20
 percent_in_cluster = 5
-DISIMILARITY_MEASURE_INNER_PRODUCT = True
-
-#do not modify constants
-voxel_num = VOXELS_GRID[0]*VOXELS_GRID[1]*VOXELS_GRID[2]
+DISIMILARITY_MEASURE_INNER_PRODUCT = False
+NORMALIZE_0_1 = False
 init_i = 135
 init_j = 76
 init_k = 74
+
+#do not modify constants
+voxel_num = VOXELS_GRID[0]*VOXELS_GRID[1]*VOXELS_GRID[2]
 i = VOXELS_GRID[0] + init_i
 j = VOXELS_GRID[1] + init_j
 k = VOXELS_GRID[2] + init_k
@@ -88,10 +90,20 @@ def build_data_matrix():
 				data_matrix[cur_voxel,3:] = image_data[ii,jj,kk,:]
 				cur_voxel = cur_voxel + 1
 
+	if(NORMALIZE_0_1):
+		for ii in range(3,data_matrix.shape[1]):
+			data_matrix[:,ii] = normalize_0_1(data_matrix[:,ii])
+
 	data_matrix = np.concatenate((data_matrix,spins),axis = 1)
 
 
 	return data_matrix
+
+def normalize_0_1(vec):
+	min_vec = np.tile(np.min(vec),[vec.shape[0],1])
+	max_vec = np.tile(np.max(vec),[vec.shape[0],1])
+
+	return np.divide(vec-min_vec,max_vec-min_vec)[0]
 
 def build_knn_matrix(data_matrix):
 	neighbours_matrix = np.zeros((voxel_num,K_NN-1))
@@ -156,7 +168,7 @@ def function_params(data_matrix,neighbours_matrix):
 			distances = distances[np.lexsort(np.fliplr(distances).T)] # Sort
 			
 			if (len(distances[:, 0]) > k_nn_half):
-				keep_knn = distances[0:k_nn_half, 1]
+				keep_knn = distances[0:k_nn_half:, 1]
 			else:
 				keep_knn = neighbors
 
@@ -181,15 +193,15 @@ def function_params(data_matrix,neighbours_matrix):
 	mean_D = float(sum(sum(D)))/float(nnz)
 	mean_K = float(2*nnz)/float(voxel_num)
 	mean_D_normal = float(sum(sum(D_normal)))/float(nnz)
-	return D,mean_D,mean_K,mean_D_normal
+	return D,mean_D,mean_K,mean_D_normal,D_normal
 
-def build_J_matrix(neighbours_matrix,data_matrix, D,mean_D,mean_K,mean_D_normal):
+def build_J_matrix(neighbours_matrix,data_matrix, D,mean_D,mean_K,mean_D_normal,D_normal):
 	J_matrix = np.zeros((voxel_num,voxel_num))
 
 	for ii in range(voxel_num):
 		for jj in range(ii+1,voxel_num):
 			if(is_neighbour(neighbours_matrix,ii,jj)):
-				J_matrix[ii,jj] = (float(1)/float(mean_K)) * exp(float(-D[ii,jj])/float(2*mean_D_normal*mean_D_normal))
+				J_matrix[ii,jj] = (float(1)/float(mean_K)) * exp(float(-D_normal[ii,jj])/float(2*mean_D_normal*mean_D_normal))
 
 	return J_matrix
 			
@@ -231,7 +243,7 @@ def frozen_bounds(J_matrix,T,data_matrix):
 
 	return frozen_bounds_indices
 
-def get_Ttrans(data_matrix,neighbours_matrix, D,mean_D,mean_K,mean_D_normal):
+def get_Ttrans(data_matrix,neighbours_matrix, D,mean_D,mean_K,mean_D_normal,D_normal):
  	coeff = float(4*float(np.log(1+float(np.sqrt(Q)))))
  	exponent = -1*float(mean_D)/float(2*mean_D_normal*mean_D_normal)
 
@@ -249,18 +261,18 @@ def in_same_cluster_cij(clusters,ii,jj):
 #data preprocessing
 data_matrix = build_data_matrix()
 neighbours_matrix = build_knn_matrix(data_matrix)
-D,mean_D,mean_K,mean_D_normal = function_params(data_matrix,neighbours_matrix)
-J_matrix = build_J_matrix(neighbours_matrix,data_matrix, D,mean_D,mean_K,mean_D_normal)
+D,mean_D,mean_K,mean_D_normal,D_normal = function_params(data_matrix,neighbours_matrix)
+J_matrix = build_J_matrix(neighbours_matrix,data_matrix, D,mean_D,mean_K,mean_D_normal,D_normal)
 
 print "Data preprocessing - done."
 
 #algorithm
 if(GENERATE_PLOT_SEARCH_SPM):
 	chi_temp = []
-	ttrans = get_Ttrans(data_matrix,neighbours_matrix, D,mean_D,mean_K,mean_D_normal)
+	ttrans = get_Ttrans(data_matrix,neighbours_matrix, D,mean_D,mean_K,mean_D_normal,D_normal)
 	print ttrans
-	Ti = ttrans*3
-	Tf = ttrans*0.01
+	Ti = ttrans*4
+	Tf = ttrans*0.1
 	T = Ti
 	temps = []
 	iter_num = 1
@@ -318,7 +330,6 @@ if(GENERATE_PLOT_SEARCH_SPM):
 				jss = data_matrix[values,1]
 				kss = data_matrix[values,2]
 
-				#print colors[i]
 				ax.set_title("Temp = " + str(T), y = 1.08)
 				ax.scatter(iss, jss, kss,c = colors[i], marker = ',',s = 1000)
 				i = (i+3)%len(colors)
@@ -328,21 +339,21 @@ if(GENERATE_PLOT_SEARCH_SPM):
 		ax.set_ylabel('j')
 		ax.set_zlabel('k')
 
-		plt.savefig('gif/plot_final_clusters_' + str(iter_num) + '.png')
+		plt.savefig('gif2/plot_final_clusters_' + str(iter_num) + '.png')
 		plt.close("all")
 		#####
 
 	#find index of superparamagnetic to paramagnetic
-	index_temp_tmp = clusters_sizes.index(max(clusters_sizes)) #check the cluster num to see where the jump appears
+	index_temp_tmp = clusters_sizes.index(max(clusters_sizes)) 
 	
-	tmp_cluster_num_diff = []
+	"""tmp_cluster_num_diff = []
 	for ii in range(0,len(cluster_num)-1):
 		tmp_cluster_num_diff.append(cluster_num[ii] - cluster_num[ii+1])
 
 	print "Tmp cluster num diff " + str(tmp_cluster_num_diff)
 
 	e_max = max(np.abs(tmp_cluster_num_diff))
-	for e in reversed(tmp_cluster_num_diff):
+	for e in tmp_cluster_num_diff:
 		if e_max == abs(e):
 			e_max = e
 			break
@@ -354,7 +365,9 @@ if(GENERATE_PLOT_SEARCH_SPM):
 	print max(clusters_sizes)
 	print index_temp_tmp
 
-	plt.plot(temps,cluster_num,'-b',temps[index_max_diff-1],cluster_num[index_max_diff-1],'-o')
+	"""
+
+	plt.plot(temps,cluster_num,'-b',temps[index_temp_tmp],cluster_num[index_temp_tmp],'-o')
 	plt.xlabel('temperature')
 	plt.ylabel('cluster number')
 	plt.title('Relation between cluster number and temperature')
@@ -371,7 +384,7 @@ if(GENERATE_PLOT_SEARCH_SPM):
 
 	
 	#index_temp = chi_temp.index(max(chi_temp))
-	T_spm = temps[index_max_diff]
+	T_spm = temps[index_temp_tmp]
 	print T_spm
 
 	plt.plot(temps,chi_temp,'-b')
