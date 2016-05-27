@@ -48,16 +48,16 @@ M = 100											number of monte carlo iterations
 
 eta = 0.95 										exponential decay rate
 
-GENERATE_PLOT_SEARCH_SPM = True					################################
-												set this boolean to True if the search spm
+GENERATE_PLOT_SEARCH_SPM = True
+												set this boolean to True if the search for superparamagnetic phase
 												should be plotted	
 
-GENERATE_PLOT_CLUSTERS = True					################################
-												set this boolean to True if the clusters
+GENERATE_PLOT_CLUSTERS = True
+												set this boolean to True if the final clusters
 												should be plotted
 
 SUBSET_KNN = True								decide if you want to use K_NN_SUBSET
-												True: 	use of K_NN_SUBSET as neighbors
+												True: 	use of K_NN_SUBSET as neighbors with the most similiar diffusion profile
 												False: 	use of K_NN as neighbors
 
 SMOOTHING = False								a voxel is assigned to a cluster if its
@@ -65,29 +65,24 @@ SMOOTHING = False								a voxel is assigned to a cluster if its
 												the voxels at the bounderies are also 
 												assigned to the cluster 
 
-coord_num = 3									################################
-												why at modify constants?
-
-thres = 1										################################
+thres = 1
 												set a threshold for a number of
-												clusters, if the number of clusters
+												data point in the cluster which will be plotted
 												> thres take it
 
-thres_pic = 1									################################
+thres_pic = 1									
 												threshold for gif
 
-percent_in_cluster = 5							################################
+percent_in_cluster = 5							The minimal % of elements in clusters that should be 										fullfiled while finding the optimal T_final
 
 
-DISIMILARITY_MEASURE_INNER_PRODUCT = False		################################
+DISIMILARITY_MEASURE_INNER_PRODUCT = False		
 												set it to True if the inner product
-												of the signal strenght of two spins
+												of the signal strenght of two voxels
 												should be considered.
 
-NORMALIZE_0_1 = False							################################
-												this normalizes the data_matrix,
-												where all signals for each voxel
-												is defined
+NORMALIZE_0_1 = False
+												this normalizes the data_matrix to 0-1 range, where each signal strength direction is normalized
 
 
 # With the next three constants a place of the cube can be defined
