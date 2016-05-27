@@ -26,7 +26,7 @@ from sklearn import preprocessing
 
 
 #modify constants
-K_NN = 6
+K_NN = 26
 K_NN_SUBSET = 6
 VOXELS_GRID = [10,10,10]
 Q = 10
