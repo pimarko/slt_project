@@ -1,26 +1,21 @@
-== Segmentation of Neuron Bundles from Diffusion MRI ==
+## Segmentation of Neuron Bundles from Diffusion MRI ==
 
-#======================================================================================
-# python libraries and install.sh
-#======================================================================================
+
+### Python, Libraries and install.sh
 In order to get all libraries run the following code in terminal/command line
 
 ./install.sh
 
 
-#======================================================================================
-# library find_clusters
-#======================================================================================
+### Module find_clusters.py
 
 At the beginning a library find_clusters is imported. There, the function to get the
 clusters is defined.
 
 import find_clusters
 
+### modify constants
 
-#======================================================================================
-# modify constants
-#======================================================================================
 This section explains the constants which can be modified.
 
 K_NN = 26										this is number of k nearest 
