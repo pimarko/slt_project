@@ -66,11 +66,11 @@
 
 
 \begin{frame}
-\frametitle{Overview}
-\textbf{Overview}
+\frametitle{Presentation Outline}
+\textbf{Overview} \newline
 \begin{itemize}
 	\item Model Extensions
-	\item Optimization
+%	\item Optimization
 	\item Implementation
 	\item Results
 \end{itemize}
@@ -78,11 +78,12 @@
 
 \begin{frame}
 \frametitle{Model Extensions I}
-\textbf{Neighbourhood Definition}: No fixed $k$-nearest neighbourhood $\implies$ automatically select \emph{suitable} neighbours:
+\textbf{Basis Model}: Data Clustering Using a Model Granular Magnet, Blatt et al. \cite{blatt1997data} \newline\newline
+\textbf{Neighbourhood Definition}: No fixed $k$-nearest neighbourhood $\implies$ automatically select $k$ \emph{suitable} neighbours:
 \linebreak
 \begin{enumerate}
 	\item Search for $k^*$-nearest neighbours of voxel $v_i$
-	\item Select the $k$ neighbours $(k^* > k)$ with the most similar diffusion profile w.r.t to voxel $v_i$\linebreak
+	\item Select the $k$ neighbours $(k < k^*)$ with the most similar diffusion profile w.r.t to voxel $v_i$\linebreak
 \end{enumerate}
 We used $k^* = 26$ and $k = 6$ which empirically turned out to be suitable.
 \end{frame}
@@ -109,51 +110,52 @@ We used $k^* = 26$ and $k = 6$ which empirically turned out to be suitable.
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Optimization}
-
-Example: If you used Metropolis, mention it and maybe comment on your proposal distribution, but do not explain how it works in general. The same for deterministic annealing, etc. For any optimization strategy not discussed during the course, elaborate more.
-
-
-\end{frame}
+%\begin{frame}
+%\frametitle{Optimization}
+%Example: If you used Metropolis, mention it and maybe comment on your proposal distribution, but do not explain how it works in general. The same for deterministic annealing, etc. For any optimization strategy not discussed during the course, elaborate more.
+%\end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Implementation}
-State the software that you used. Did you use CPU, GPU, cluster, etc? Did you try to write efficient code? What performance differences did you observe? What were the most useful tricks that you applied? What else did you do to decrease runtime and memory usage?
-
+%State the software that you used. Did you use CPU, GPU, cluster, etc? Did you try to write efficient code? What performance differences did you observe? What were the most useful tricks that you applied? What else did you do to decrease runtime and memory usage?
+\textbf{Language}: Python / numpy
+\newline\newline CPU driven, single threaded implementation. Lots of nested loops and room to improve it.
+\newline\newline \textbf{Attempted Approach}: First implement it correctly, then optimize $\implies$ We had hard times (even debugging with a small grid was very slow)
+\newline\newline Unfortunately, no time left for optimizations like threads, GPU etc.
 \end{frame}
 
 
 \begin{frame}[fragile]
-\frametitle{Implementation}
+\frametitle{Results I}
 \begin{figure}
+\captionsetup[subfigure]{labelformat=empty}
 \centering
 \begin{subfigure}{0.45\textwidth}
   \centering
   \includegraphics[width=.8\linewidth]{fig/cluster_num.png}
-  \caption{}%Relation between the total number of clusters and temperature with the selected temperature $T_{final}$.}
+  \caption{\#Clusters}%Relation between the total number of clusters and temperature with the selected temperature $T_{final}$.}
   \label{fig:cluster_num}
 \end{subfigure}
 \hspace*{\fill}
 \begin{subfigure}{0.45\textwidth}
   \centering
   \includegraphics[width=.8\linewidth]{fig/magnetization.png}
-  \caption{}%Relation between the magnetization and temperature.}
+  \caption{$\langle m \rangle$}%Relation between the magnetization and temperature.}
   \label{fig:magnetization}
 \end{subfigure}
 \begin{subfigure}{0.45\textwidth}
   \centering
   
   \includegraphics[width=.8\linewidth]{fig/suspencability.png}
-  \caption{}%Relation between the susceptibility and temperature.}
+  \caption{$\chi$}%Relation between the susceptibility and temperature.}
   \label{fig:suspenc}
 \end{subfigure}
 \hspace*{\fill}
 \begin{subfigure}{0.45\textwidth}
   \centering
   \includegraphics[width=.8\linewidth]{fig/temp__.png}
-  \caption{}%Distribution of $G$.}
+  \caption{Distribution of $G$}
   \label{fig:gij}
 \end{subfigure}
 \end{figure}
@@ -163,13 +165,14 @@ State the software that you used. Did you use CPU, GPU, cluster, etc? Did you tr
 
 
 \begin{frame}
-\frametitle{Results}
+\frametitle{Results II}
 
 \begin{figure}
+\captionsetup[subfigure]{labelformat=empty}
 \begin{subfigure}{0.45\textwidth}
   \centering
   \includegraphics[width=.8\linewidth]{fig/low_temp.jpg}
-  \caption{}%L}
+  \caption{Low Temperature}%L}
   \label{fig:low_tmp}
 \end{subfigure}
 \hspace*{\fill}
@@ -177,14 +180,14 @@ State the software that you used. Did you use CPU, GPU, cluster, etc? Did you tr
   \centering
 
   \includegraphics[width=.8\linewidth]{fig/high_tmp.jpg}
-  \caption{}%}
+  \caption{High Temperature}%}
   \label{fig:high_temp}
 \end{subfigure}
 
 \begin{subfigure}{0.45\textwidth}
   \centering
   \includegraphics[width=.9\linewidth]{fig/figure_1.png}
-  \caption{}%Final clustering result of a (12, 12, 12) voxel grid.}
+  \caption{Super-paramagnetic Regime}%Final clustering result of a (12, 12, 12) voxel grid.}
   \label{fig:fig_good_final_cluster_12}
 \end{subfigure}
 \hspace*{\fill}
@@ -192,7 +195,7 @@ State the software that you used. Did you use CPU, GPU, cluster, etc? Did you tr
   \centering
 
   \includegraphics[width=.9\linewidth]{fig/cluster-8x8x8-2.png}
-  \caption{}%Final clustering result of a (8, 8, 8) voxel grid.}
+  \caption{Super-paramagnetic Regime}%Final clustering result of a (8, 8, 8) voxel grid.}
   \label{fig:fig_good_final_cluster_7}
 \end{subfigure}
 
@@ -201,8 +204,14 @@ State the software that you used. Did you use CPU, GPU, cluster, etc? Did you tr
 
 
 \begin{frame}
+\frametitle{Results III}
+\begin{center}
+	\textbf{\Large{Video of Temperature Search /\\ Phase Transitions}}
+\end{center}
+\end{frame}
+
+\begin{frame}
     \frametitle{References}
-    
     \printbibliography
 \end{frame}
 

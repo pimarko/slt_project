@@ -16,5 +16,35 @@
   {}
 \endgroup
 
+
+\refsection{0}
+  \sortlist{entry}{nty}
+    \entry{blatt1997data}{article}{}
+      \name{labelname}{3}{}{%
+        {{hash=d8a6bd69a5543352cc810eb0fffd8e27}{Blatt}{B\bibinitperiod}{Marcelo}{M\bibinitperiod}{}{}{}{}}%
+        {{hash=c0faf252d943bfd29d7ae1796bf27567}{Wiseman}{W\bibinitperiod}{Shai}{S\bibinitperiod}{}{}{}{}}%
+        {{hash=777a59fea7306fd205ac98f0595b4a21}{Domany}{D\bibinitperiod}{Eytan}{E\bibinitperiod}{}{}{}{}}%
+      }
+      \name{author}{3}{}{%
+        {{hash=d8a6bd69a5543352cc810eb0fffd8e27}{Blatt}{B\bibinitperiod}{Marcelo}{M\bibinitperiod}{}{}{}{}}%
+        {{hash=c0faf252d943bfd29d7ae1796bf27567}{Wiseman}{W\bibinitperiod}{Shai}{S\bibinitperiod}{}{}{}{}}%
+        {{hash=777a59fea7306fd205ac98f0595b4a21}{Domany}{D\bibinitperiod}{Eytan}{E\bibinitperiod}{}{}{}{}}%
+      }
+      \list{publisher}{1}{%
+        {MIT Press}%
+      }
+      \strng{namehash}{23fa5abe64150e43ebcf0f8c21019442}
+      \strng{fullhash}{23fa5abe64150e43ebcf0f8c21019442}
+      \field{sortinit}{B}
+      \field{labeltitle}{Data clustering using a model granular magnet}
+      \field{journaltitle}{Neural Computation}
+      \field{number}{8}
+      \field{title}{Data clustering using a model granular magnet}
+      \field{volume}{9}
+      \field{year}{1997}
+      \field{pages}{1805\bibrangedash 1842}
+    \endentry
+  \endsortlist
+\endrefsection
 \endinput
 

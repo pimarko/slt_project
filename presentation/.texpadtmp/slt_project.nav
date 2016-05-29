@@ -33,7 +33,13 @@
 \defcounter {refsection}{0}\relax 
 \headcommand {\beamer@framepages {8}{8}}
 \defcounter {refsection}{0}\relax 
-\headcommand {\slideentry {0}{0}{9}{9/9}{}{0}}
+\headcommand {\sectionentry {1}{References}{9}{References}{0}}
+\defcounter {refsection}{0}\relax 
+\headcommand {\beamer@sectionpages {1}{8}}
+\defcounter {refsection}{0}\relax 
+\headcommand {\beamer@subsectionpages {1}{8}}
+\defcounter {refsection}{0}\relax 
+\headcommand {\slideentry {1}{0}{9}{9/9}{}{0}}
 \defcounter {refsection}{0}\relax 
 \headcommand {\beamer@framepages {9}{9}}
 \headcommand {\beamer@partpages {1}{9}}
