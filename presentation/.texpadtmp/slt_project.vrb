@@ -1,0 +1,32 @@
+\frametitle{Implementation}
+\begin{figure}
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{fig/cluster_num.png}
+  \caption{}%Relation between the total number of clusters and temperature with the selected temperature $T_{final}$.}
+  \label{fig:cluster_num}
+\end{subfigure}
+\hspace*{\fill}
+\begin{subfigure}{0.45\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{fig/magnetization.png}
+  \caption{}%Relation between the magnetization and temperature.}
+  \label{fig:magnetization}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \centering
+
+  \includegraphics[width=.8\linewidth]{fig/suspencability.png}
+  \caption{}%Relation between the susceptibility and temperature.}
+  \label{fig:suspenc}
+\end{subfigure}
+\hspace*{\fill}
+\begin{subfigure}{0.45\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{fig/temp__.png}
+  \caption{}%Distribution of $G$.}
+  \label{fig:gij}
+\end{subfigure}
+\end{figure}
+

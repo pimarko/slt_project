@@ -69,7 +69,7 @@
 \frametitle{Overview}
 \textbf{Overview}
 \begin{itemize}
-	\item Model
+	\item Model Extensions
 	\item Optimization
 	\item Implementation
 	\item Results
@@ -77,11 +77,20 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Model}
-If you used an approach discussed in either lecture, tutorial or exercise, do not repeat the entire content. Only use what you need to put your extensions, modifications, etc. into context.
-\\
-\textbf{Similarity Matrix}
-\\ Since in our setting we are not dealing with pairwise distances, rather with pairwise similarities of diffusion profiles, the similarity matrix $D$ is calculated as follow
+\frametitle{Model Extensions I}
+\textbf{Neighbourhood Definition}: No fixed $k$-nearest neighbourhood $\implies$ automatically select \emph{suitable} neighbours:
+\linebreak
+\begin{enumerate}
+	\item Search for $k^*$-nearest neighbours of voxel $v_i$
+	\item Select the $k$ neighbours $(k^* > k)$ with the most similar diffusion profile w.r.t to voxel $v_i$\linebreak
+\end{enumerate}
+We used $k^* = 26$ and $k = 6$ which empirically turned out to be suitable.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Model Extensions II}
+\textbf{Similarity Matrix}: \emph{Pairwise diffusion profiles similarities} instead of \emph{pairwise voxel distances}
 \begin{equation*} 
 	D_{ij} = 
 	\begin{cases}
@@ -89,8 +98,14 @@ If you used an approach discussed in either lecture, tutorial or exercise, do no
 		0 & \text{otherwise}
 	\end{cases}
 \end{equation*}
-\textbf{Inner Products for Measuring Diffusion Similarity}
-\\ As another extension to the Blatt et al. \cite{blatt1997data} model we looked at inner products $\langle s_i, s_j \rangle$ between the vectors $s_{i, j}$ representing the diffusion profile of voxels $v_i$ and $v_j$ in order to get better insight in their similarity. This similarity measure further provides the opportunity to extend the model by applying a kernel. 
+\textbf{Use of Inner Products}: Further we looked at inner products $\langle s_i, s_j \rangle$ between the diffusion profiles $\implies$ allows to extend the model by applying a kernel. 
+\begin{equation*} 
+	D_{ij} = 
+	\begin{cases}
+		\langle s_i, s_j \rangle & \text{if $v_i$ and $v_j$ are mutual neighbours} \\
+		0 & \text{otherwise}
+	\end{cases}
+\end{equation*}
 \end{frame}
 
 

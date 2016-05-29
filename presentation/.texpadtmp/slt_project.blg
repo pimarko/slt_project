@@ -1,0 +1,9 @@
+[0] Config.pm:387> INFO - This is Biber 1.6
+[0] Config.pm:390> INFO - Logfile is '/Users/Nico/Development/SLT/presentation/.texpadtmp/slt_project.blg'
+[115] biber-darwin:218> INFO - === Sun May 29, 2016, 20:21:20
+[115] Biber.pm:325> INFO - Reading '/Users/Nico/Development/SLT/presentation/.texpadtmp/slt_project.bcf'
+[214] Biber.pm:623> INFO - Found 0 citekeys in bib section 0
+[215] Utils.pm:169> WARN - The file '/Users/Nico/Development/SLT/presentation/.texpadtmp/slt_project.bcf' does not contain any citations!
+[250] bbl.pm:472> INFO - Writing '/Users/Nico/Development/SLT/presentation/.texpadtmp/slt_project.bbl' with encoding 'UTF-8'
+[251] bbl.pm:545> INFO - Output to /Users/Nico/Development/SLT/presentation/.texpadtmp/slt_project.bbl
+[251] Biber.pm:105> INFO - WARNINGS: 1
